@@ -1,0 +1,10 @@
+{
+    "AMI Only" : {
+        "description" : "The AMI data that were collected from the premises will be aggregated to be used as load profiles for transformers in the simulation. Note that AMI data may not be 100% available for all transformers."
+    },
+
+    "AMI + Synthetic load"  : {
+        "description" : "The insufficient AMI data will be augmented with synthetically generated load profiles using the ResStock and ComStock repositories."
+    }
+
+}

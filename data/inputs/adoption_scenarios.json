@@ -1,0 +1,17 @@
+{
+    "2030 (Low)" : {
+        "description" : "The number of EVs and their energy demand will be determined based on the selected adoption scenario generated using EVI-Pro and TEMPO.",
+        "file_path" : "/data/adoptions/2030/low.json"
+    },
+
+    "2030 (Medium)" : {
+        "description" : "The number of EVs and their energy demand will be determined based on the selected adoption scenario generated using EVI-Pro and TEMPO.",
+        "file_path" : "/data/adoptions/2030/medium.json"
+    },
+
+    "2030 (High)" : {
+        "description" : "The number of EVs and their energy demand will be determined based on the selected adoption scenario generated using EVI-Pro and TEMPO.",
+        "file_path" : "/data/adoptions/2030/high.json"
+    }
+
+}

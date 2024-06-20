@@ -1,0 +1,24 @@
+{
+
+"Uncontrolled" : {
+    "description" : "EVs are charged at their rated charging power (with an optional cap) without implementing any charge control policy. "
+},
+
+"TOU ASAP" : {
+    "description" : "All EVs are charged (at rated power) as soon as possible only during the off-peak periods based on a TOU price tariff."
+},
+
+"TOU ALAP" : {
+    "description" : "All EVs are charged (at rated power) as late as possible only during off-peak periods based on a TOU price tariff."
+},
+
+"TOU Random" : {
+    "description" : "All EVs are charged (at rated power) only during off-peak periods based on a TOU price tariff with random charging start times to avoid concurrent charging overload."
+},
+
+"Coordinated" : {
+    "description" : "EVs connected to the same service transformer coordinate their charging to avoid transformer overloading. In ideal case, the transformer loading is assumed to be monitored by controller."
+}
+
+
+}
