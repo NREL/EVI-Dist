@@ -1,13 +1,15 @@
 import pandas as pd
 import os
 from datetime import datetime, timedelta
+import pytz
 
 def generate_upsampled_baseload(df, month):
     # Convert the 'time' column to datetime format
     print("Generating baseload profiles...")
-    file_path_to_save = os.getcwd() + "\\data\\temp\\baseload_profiles.csv"
+    file_path_to_save = os.getcwd() + "/data/temp/baseload_profiles.csv"
 
     df['time'] = pd.to_datetime(df['time'])
+    df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert('America/Denver')
 
     # Extract the year from the first row of the DataFrame
     year = df['time'].dt.year.iloc[0]
@@ -20,6 +22,11 @@ def generate_upsampled_baseload(df, month):
 
     # Find the first Sunday of the month
     first_sunday = first_monday + timedelta(days=6)
+
+    # Convert first_monday and first_sunday to timezone-aware datetime objects
+    timezone = pytz.timezone('America/Denver')
+    first_monday = timezone.localize(first_monday)
+    first_sunday = timezone.localize(first_sunday)
 
     # Filter rows between the first Monday and the first Sunday
     filtered_df = df[(df['time'] >= first_monday) & (df['time'] < first_sunday + timedelta(days=1))]
@@ -49,5 +56,5 @@ def generate_upsampled_baseload(df, month):
     upsampled_df = upsampled_df[['day', 'time', 'date'] + [col for col in df.columns if col != 'time']]
 
     # Save
-    upsampled_df.to_csv(file_path_to_save)
+    upsampled_df.to_csv(file_path_to_save, index=False)
     print("Completed!")
