@@ -1,4 +1,4 @@
-# EVI-DiST v0.7.1a
+# EVI-DiST v0.7.2a
 
 ![overview](dashboard/fig/dashboard.png)
 
