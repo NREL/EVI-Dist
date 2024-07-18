@@ -372,7 +372,7 @@ async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, 
 
     # Concatenate the DataFrames to form a single DataFrame and save to local CSV file
     combined_weekly_profile_df = pd.concat(df_list, ignore_index=True)
-    path = os.getcwd() + '\\data\\temp\\'
+    path = os.getcwd() + '/data/temp/'
     file_name = path + 'ev_profiles_' + SCM_scenario + '.csv'
     #combined_weekly_profile_df.to_csv('C:\\Users\\eucer\\OneDrive - NREL\\Desktop\\NREL Work\\Projects\\EVI-Dist_v1\\EVI-Dist\\data\\temp\\EV_profiles_weekly_' + SCM_scenario + '.csv')
     combined_weekly_profile_df.to_csv(file_name)

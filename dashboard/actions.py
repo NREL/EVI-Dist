@@ -54,7 +54,7 @@ class DataOperator:
     
     def get_feeder_load(self):
         try:
-            f = self.base_load.iloc[:,1:].sum(axis=1)
+            f = self.base_load.iloc[:,4:].sum(axis=1)
             return np.array(f.tolist())
         except:
             return np.zeros((10080,))

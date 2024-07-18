@@ -29,7 +29,7 @@ import sys
 
 parent_directory = os.getcwd()
 
-sys.path.append(parent_directory + "\\modules")
+sys.path.append(parent_directory + "/modules")
 
 from data_structures import Signal
       
@@ -47,13 +47,13 @@ class pgDisplay(param.Parameterized):
         paths = {}
         paths['premise_report'] = self.file_names['premise_report']
         paths['ev_adoption'] = self.file_names['ev_adoption']
-        paths['baseload_profiles'] = parent_directory + "\\data\\temp\\baseload_profiles.csv"
+        paths['baseload_profiles'] = parent_directory + "/data/temp/baseload_profiles.csv"
         paths['ev_profiles'] = dict()
         
         for cntl in self.configs['controller']:
-            paths['ev_profiles'][cntl] = parent_directory + "\\data\\temp\\ev_profiles_" + cntl + ".csv"
+            paths['ev_profiles'][cntl] = parent_directory + "/data/temp/ev_profiles_" + cntl + ".csv"
         
-        paths['mappings'] = parent_directory + "\\data\\mappings\\mappings.pkl"
+        paths['mappings'] = parent_directory + "/data/mappings/mappings.pkl"
         
         #self.dop = DataOperator(paths, self.configs['feeder'], self.configs['controller']) 
         self.dop = DataOperator(paths, self.configs) 

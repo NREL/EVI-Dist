@@ -79,13 +79,13 @@ class pgUpload(param.Parameterized):
                     current_directory = os.getcwd()
                     parent_directory = os.path.dirname(current_directory)
 
-                    mappings_directory = current_directory + "\data\mappings"
+                    mappings_directory = current_directory + "/data/mappings"
                     if not os.path.exists(mappings_directory):
                         os.makedirs(mappings_directory)
 
-                    foo = mappings_directory + "\mappings.pkl"
-                    print(foo)
-                    with open(foo, "wb") as f:
+                    mappings_directory = mappings_directory + "/mappings.pkl"
+                    print(mappings_directory)
+                    with open(mappings_directory, "wb") as f:
                         pickle.dump(self.variables, f)
 
                     self.ready = True    

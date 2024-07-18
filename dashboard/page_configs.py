@@ -39,16 +39,16 @@ class pgConfig(param.Parameterized):
         # print(self.file_names)
         # print(self.months)
 
-        with open(os.getcwd() + "\data\mappings\mappings.pkl", "rb") as pickle_file:
+        with open(os.getcwd() + "/data/mappings/mappings.pkl", "rb") as pickle_file:
             self.mappings = pickle.load(pickle_file)
 
-        with open(os.getcwd() + "\\data\\inputs\\adoption_scenarios.json", "rb") as json_file:
+        with open(os.getcwd() + "/data/inputs/adoption_scenarios.json", "rb") as json_file:
             self.json_adoption_scenarios = json.load(json_file) 
 
-        with open(os.getcwd() + "\\data\\inputs\\ev_controllers.json", "rb") as json_file:
+        with open(os.getcwd() + "/data/inputs/ev_controllers.json", "rb") as json_file:
             self.json_controllers = json.load(json_file) 
 
-        with open(os.getcwd() + "\\data\\inputs\\load_profiles.json", "rb") as json_file:
+        with open(os.getcwd() + "/data/inputs/load_profiles.json", "rb") as json_file:
             self.json_load_profiles = json.load(json_file) 
        
         feeders = [feeder for feeder in self.mappings['xf_mappings']]

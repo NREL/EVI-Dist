@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import sys
 import os
 parent_directory = os.getcwd()
-sys.path.append(parent_directory + "\\modules")
+sys.path.append(parent_directory + "/modules")
 import lite.ev_profile_generation as evpg
 import lite.baseload_profile_generation as bpg
 import pandas as pd
@@ -25,7 +25,7 @@ class Simulation(ABC):
         """
         self.input_files = input_files
         self.configs = configs
-        path = os.getcwd() + '\\data\\temp'
+        path = os.getcwd() + '/data/temp'
         if not os.path.exists(path):
             os.makedirs(path)
         self.output_directory = path
@@ -47,7 +47,7 @@ class Simulation(ABC):
         (For Plus version, new files could be generated to store power flow results)
         """
         ###### FIX HERE
-        df.to_csv(self.output_directory + '\\meta.csv', index=False)    
+        df.to_csv(self.output_directory + '/meta.csv', index=False)    
 
 
 # Example simulation class for Lite version
@@ -195,7 +195,7 @@ class SimLite(Simulation):
         print(f"Saving meta data and generating final simulation variables...")
         self._save(df_feeder_month, 'meta.csv')
         
-        df_feeder = pd.read_csv(self.output_directory + '\\meta.csv')
+        df_feeder = pd.read_csv(self.output_directory + '/meta.csv')
         
         df_feeder_month['park_start_timestamp'] = df_feeder_month['park_start_timestamp'].astype(str)
         df_feeder_month['charge_start_time_TOU_ASAP'] = df_feeder_month['charge_start_time_TOU_ASAP'].astype(str)

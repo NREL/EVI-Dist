@@ -1,4 +1,4 @@
-# EVI-DiST - v0.7.1a
+# EVI-DiST - v.0.7.2a
 
 ```python
 import panel as pn

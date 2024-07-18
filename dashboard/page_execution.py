@@ -7,9 +7,10 @@ import os
 import threading
 from tqdm import tqdm
 from panel.widgets import Tqdm
+from version_info import version_name
 
 parent_directory = os.getcwd()
-sys.path.append(parent_directory + "\\modules")
+sys.path.append(parent_directory + "/modules")
 
 from simulation import SimLite
 
@@ -44,7 +45,7 @@ class pgExecution(param.Parameterized):
         #self.tqdm_progress = Tqdm(align=('center','center'), width=300)
 
         ########################### THIS VERSION SHOULD BE READ OFF OF A FILE #############################
-        self.terminal = pn.widgets.Terminal("EVI-DiST (v.0.7.1a)\nSimulation terminal\n==================================\n",
+        self.terminal = pn.widgets.Terminal(f"EVI-DiST (v{version_name})\nSimulation terminal\n==================================\n",
         # options={
         # "fontSize": 12,
         # "fontFamily": 'Consolas',

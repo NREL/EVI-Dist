@@ -56,5 +56,5 @@ def generate_upsampled_baseload(df, month):
     upsampled_df = upsampled_df[['day', 'time', 'date'] + [col for col in df.columns if col != 'time']]
 
     # Save
-    upsampled_df.to_csv(file_path_to_save, index=False)
+    upsampled_df.to_csv(file_path_to_save, index=True)
     print("Completed!")
