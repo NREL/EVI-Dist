@@ -1,4 +1,5 @@
-# EVI-DiST v0.7.2a
+
+# EVI-DiST v0.8.0a
 
 ![overview](dashboard/fig/dashboard.png)
 
@@ -47,11 +48,15 @@ python run.py
 
 ## How to use
 
-EVI-DiST welcomes you with the following **mode selection** page. As of version 0.7.1a, only the **Lite** version is available. Click **EVI-DiST (Lite)** from the mode selection page.
+EVI-DiST welcomes you with the following **mode selection** page. As of version 0.8.0a, only the **Lite** version is available. Click **EVI-DiST (Lite)** from the mode selection page.
 
 ![image](dashboard/fig/welcome.png)
 
-On the **Upload input files** page, browse and select premise report and EV adoption scenario files. EVI-DiST comes with an existing premise report (`data/premise_data/10_feeders_premise_report.csv`) and the 2030 high adoption scenario (`data/adoptions/2030/high.csv`) by default. You can find more adoption scenarios under `data/adoptions/2030`.
+To start a new simulation, select **Run sim from strach** option. This guide you through the steps to configure, run and view the simulation results. As of version 0.8.0a, you can also load results from a previously run session by selecting the **Load saved simulation files** option. This will skip the setup process and take you directly to the **Displaying results** page, where the saved simulation results are shown.
+
+![image](dashboard/fig/load.png)
+
+Upon selecting **Run sim from strach** option, you will get to the **Upload input files** page. Browse and select premise report and EV adoption scenario files. These files are not shipped with EVI-DiST and are usually provided to the user separately. 
 
 ![image](dashboard/fig/file_selection.png)
 
@@ -59,7 +64,7 @@ Once the files are selected, click on the **Upload selected files** button to ex
 
 ![image](dashboard/fig/file_selection_successful.png)
 
-On the **Configurations** page, select the feeder that you want to run the simulation for. Select the controller type(s), and the month of simulation. If you have AMI data for the selected feeder, browse that file as well. You can find the existing AMI data under `data/ami_data`. If no AMI data is selected, only EV profiles will be shown. Finally, you can custom name the adoption scenario, e.g., 2030 (High).
+On the **Configurations** page, select the feeder that you want to run the simulation for. Select the controller type(s), and the month of simulation. If you have **transformer** level AMI data for the selected feeder, browse that file as well. If no AMI data is selected, only EV profiles will be shown. If you additionally have **customer** level AMI for the selected feeder, you can select its file to enable coincidence analysis results in the **Displaying results**  page. Finally, you can custom name the adoption scenario, e.g., 2030 (High).
 
 ![image](dashboard/fig/configs.png)
 
@@ -83,7 +88,7 @@ You can see the comparison results of the selected controllers under the **Compa
 
 ![image](dashboard/fig/comparison.png)
 
-You can see the statistical results for each transformer and the selected controller type under the Stats tab. Additionally, you can manually change the threshold value and re-compute the stats accordingly.
+You can see the statistical results for each transformer and the selected controller type under the **Stats** tab. Additionally, you can manually change the threshold value and re-compute the stats accordingly. If you already uploaded customer level AMI data file, you can see the coincidence results under the **Stats** tab when **Show feeder level plots** is switched on. 
 
 ![image](dashboard/fig/stats.png)
 
@@ -91,6 +96,7 @@ You can see the statistical results for each transformer and the selected contro
 For questions or more information, please contact: 
 
 * Emin Ucer: Emin.Ucer@nrel.gov
-* Mingzhi Zhang: Mingzhi.Zhang@nrel.gov
 * Nadia Panossian: Nadia.Panossian@nrel.gov
+* Derek Jackson: Derek.Jackson@nrel.gov
 * Erik Pohl: Erik.Pohl@nrel.gov
+* Mingzhi Zhang: Mingzhi.Zhang@nrel.gov

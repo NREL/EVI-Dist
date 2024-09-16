@@ -374,7 +374,10 @@ async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, 
     combined_weekly_profile_df = pd.concat(df_list, ignore_index=True)
     path = os.getcwd() + '/data/temp/'
     file_name = path + 'ev_profiles_' + SCM_scenario + '.csv'
-    #combined_weekly_profile_df.to_csv('C:\\Users\\eucer\\OneDrive - NREL\\Desktop\\NREL Work\\Projects\\EVI-Dist_v1\\EVI-Dist\\data\\temp\\EV_profiles_weekly_' + SCM_scenario + '.csv')
+
+    # Downsample the final ev profile at display res
+    combined_weekly_profile_df = combined_weekly_profile_df.iloc[:-1:1]
+
     combined_weekly_profile_df.to_csv(file_name)
     print('EV charging profiles generated and saved to local CSV file successfully!')
 

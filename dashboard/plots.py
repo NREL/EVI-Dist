@@ -1,6 +1,18 @@
+import sys
 from abc import ABC, abstractmethod
 import plotly.graph_objs as go
 import plotly.express as px
+import random
+import statistics as stats
+import numpy as np
+
+from matplotlib.figure import Figure
+from matplotlib import cm
+
+import matplotlib.pyplot as plt
+
+# sys.path.append('../')
+# from modules.data_structures import Signal
 
 
 class Plot(ABC):
@@ -89,6 +101,7 @@ class LinePlot(Plot):
                                width=self.params['width'], 
                                height=self.params['height'])
         self.fig.update_layout(font_size=self.params['fontsize'])
+        self.fig.update_traces(line_shape='hv')
 
         decimation = int(len(self.signal.x)/7)
 
@@ -154,6 +167,39 @@ class LinePlot(Plot):
         trace = go.Scatter(x=signal.x, y=signal.y, name=signal.name, showlegend=True, line=dict(color=self.color_seq[color_seq]))
         self.fig.add_trace(trace)
 
+class SimpleLinePlot(Plot):
+
+    def __init__(self, params, fig_type="notebook"):
+        self.params = params
+        if fig_type == "notebook":
+            self.fig = plt.figure(figsize=(8,3))
+        else:
+            self.fig = Figure(figsize=(8,3))
+        self.axis = self.fig.subplots(nrows=params['nrows'], ncols=params['ncols'])
+        self.axis = self.axis.flatten()
+
+    def gen_plot(self, signal, label, pos=0):
+        line, = self.axis[pos].plot(signal.x, signal.y, label=label)
+        return line
+
+    def add_trace(self, signal, label, pos=0): # This is a dublicate of gen_plot, so it is reduntant. Added for consistency, but can be removed in future. 
+        line, =  self.axis[pos].plot(signal.x, signal.y, label=label)
+        return line
+
+    def add_bar(self, signal, label, pos=0):
+        bar = self.axis[pos].bar(signal.x, signal.y, label=label)
+        return bar
+
+    def add_text(self, coord : tuple(), text, color, ha, va, pos=0):
+        self.axis[pos].text(coord[0], coord[1], text, color, ha, va)
+
+class BarPlot(Plot):
+    def __init__(self, params):
+        pass
+
+    def gen_plot(self):
+        pass
+
 class HistogramPlot(Plot):
 
     def __init__(self, signal, params) -> None:
@@ -169,7 +215,7 @@ class HistogramPlot(Plot):
     def gen_plot(self):
         
         self._update_theme(self.params)
-        trace = go.Histogram(x=self.signal.y, name=self.signal.name, xbins=dict(start=0,end=max(self.signal.y), size=max(self.signal.y)/30), marker=dict(color=self.color_seq[0]))
+        trace = go.Histogram(x=self.signal.y, name=self.signal.name, marker=dict(color=self.color_seq[0]))
         self.fig.add_trace(trace)
 
         self.fig.update_layout(title=self.params['title'], 
@@ -223,7 +269,7 @@ class HistogramPlot(Plot):
         return self.fig
     
     def add_trace(self, signal : dict, color_seq : int):
-        trace = go.Histogram(x=signal.y, name=signal.name, xbins=dict(start=0,end=max(self.signal.y), size=max(self.signal.y)/30), marker=dict(color=self.color_seq[color_seq]))
+        trace = go.Histogram(x=signal.y, name=signal.name, marker=dict(color=self.color_seq[color_seq]))
         self.fig.add_trace(trace)
 
 # Factory method

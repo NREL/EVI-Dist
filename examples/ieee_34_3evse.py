@@ -4,37 +4,41 @@ The grid model is the IEEE 34 bus feeder with three EVSE connected.
 The loads are taken from 
 The EVSE controller turns the load on at 00:00, off at 15:00, on again at 21:00
 """
-import sys
 import os
+import sys
+sys.path.append(os.getcwd())
+from pathinit import EVIDIST_ROOT_PATH
 import subprocess
 import multiprocessing
 from multiprocessing import Process, Pool
-sys.path.append('../')
 import helics as h
-
-# the below classes are in the ../block_classes directory
-sys.path.insert(1, '../block_classes')
-from GridSim import GridSim
-from EVChargeSim import EVChargeSim
-from Controller import Controller
+from block_classes.GridSim import GridSim
+from block_classes.EVChargeSim import EVChargeSim
+from block_classes.Controller import Controller
 
 # create a helics broker in the command prompt
 #hbroker = h.helicsCreateBroker(type='zmq')
-subprocess.Popen(['helics_broker', '-f2', '-tzmq'])
-#os.spawnv(os.P_NOWAIT, 'helics_broker', ['-f3', '-tzmq', '--logging=debug'])
+subprocess.Popen(['helics_broker', '-f3', '-tzmq'])
+# os.spawnv(os.P_NOWAIT, 'helics_broker', ['-f3', '-tzmq', '--logging=debug'])
 print('broker started')
 
-subprocess.Popen(['python', 'GridSim.py'])
+subprocess.Popen(['python', EVIDIST_ROOT_PATH + '/block_classes/Controller.py', '60'])
+#os.spawnv(os.P_NOWAIT, 'python', ['Controller.py'])
+print('controller started')
+
+# subprocess.Popen(['python', './block_classes/GridSim.py'])
+# subprocess.Popen(['python', './block_classes/GridSim.py', f'../inputs/opendss_model/ieee34.dss'])
+subprocess.Popen(['python', EVIDIST_ROOT_PATH + '/block_classes/GridSim.py', '60', EVIDIST_ROOT_PATH + f'/inputs/opendss_model/ieee34.dss'])
 #os.spawnv(os.P_NOWAIT, 'python', ['GridSim.py'])
 print('ieee34bus grid sim started')
 
-subprocess.Popen(['python', 'EVChargeSim.py'])
-#os.spawnv(os.P_NOWAIT, 'python', ['EVChargeSim.py'])
+# subprocess.Popen(['python', './block_classes/EVChargeSim.py'])
+subprocess.Popen(['python', EVIDIST_ROOT_PATH + '/block_classes/EVChargeSim.py', '60'])
+# os.spawnv(os.P_NOWAIT, 'python', ['EVChargeSim.py'])
 print('charging simulation started')
 
-subprocess.Popen(['python', 'Controller.py'])
-#os.spawnv(os.P_NOWAIT, 'python', ['Controller.py'])
-print('controller started')
+
+
 """
 # initialize the module classes
 ieee_34_feeder = GridSim(opendss_path='../inputs/opendss_model/ieee34.dss') #, helics_config_path='../inputs/helics_configs/opendss_helics_config.json', cosim=True)

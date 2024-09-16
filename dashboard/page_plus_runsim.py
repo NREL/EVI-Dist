@@ -1,30 +1,37 @@
+import os
+import sys
+sys.path.append(os.getcwd())
+from pathinit import EVIDIST_ROOT_PATH
 import panel as pn
 import param
 import asyncio
 from styles import custom_style
-import sys
-import os
-import threading
 from tqdm import tqdm
 from panel.widgets import Tqdm
-from version_info import version_name
 
-parent_directory = os.getcwd()
-sys.path.append(parent_directory + "/modules")
-
-from simulation import SimLite
+from modules.simulation_plus import SimPlus
 
 pn.extension('terminal')
 
-class pgExecution(param.Parameterized):
+class pgPlusRunSim(param.Parameterized):
 
     file_names = param.Dict()
     configs = param.Dict()
 
-    ready = param.Boolean(default=True)
+    ready = param.Boolean(default=False)
 
     @param.output('file_names', 'configs')
     def output(self):
+        self.file_names = {'dss_main' : self.file_names['dss_main']}
+        self.file_names['evloads'] = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/{self.configs["sim_name"]}_evloads.csv'
+        self.file_names['linecurrents'] = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/{self.configs["sim_name"]}_linecurrents.csv'
+        self.file_names['linedata'] = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/{self.configs["sim_name"]}_linedata.csv'
+        self.file_names['trnscurrents'] = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/{self.configs["sim_name"]}_trnscurrents.csv'
+        self.file_names['trnskva'] = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/{self.configs["sim_name"]}_trnskva.csv'
+        self.file_names['trnskva_ratings'] = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/{self.configs["sim_name"]}_trnskva_ratings.csv'
+        self.file_names['voltages'] = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/{self.configs["sim_name"]}_voltages.csv'
+        self.file_names['bus_info'] = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/{self.configs["sim_name"]}_businfo.csv'
+        self.configs = {"sim_name": self.configs["sim_name"]}
         return self.file_names, self.configs
     
     def __init__(self, **params):
@@ -34,25 +41,15 @@ class pgExecution(param.Parameterized):
         self.progress_bar = pn.widgets.Progress(name='Progress', value=0, width=300, align=('center','center'))
         self.simulation_description = pn.pane.Markdown(f"""
                     ## Simulation config summary
-                    - <b>Selected feeder: </b>{self.configs['feeder']}
-                    - <b>Selected controller(s): </b>{self.configs['controller']}
-                    - <b>Selected month: </b>{self.configs['month']}
-                    - <b>EV Adoption: </b>{self.configs['adoption']}
-                    - <b>AMI data: </b>{self.configs['ami_data_file']}""", height=150)
+                    - <b>{self.configs["sim_name"]}</b>""", height=150)
         self.info_text = [pn.pane.Markdown("Execution progress", styles=custom_style, align=('center','center')), 
                           pn.pane.Markdown("0%", width=50, styles=custom_style, align=('center','center'))]
         self.pb = tqdm(total=100)
         #self.tqdm_progress = Tqdm(align=('center','center'), width=300)
 
         ########################### THIS VERSION SHOULD BE READ OFF OF A FILE #############################
-        self.terminal = pn.widgets.Terminal(f"EVI-DiST (v{version_name})\nSimulation terminal\n==================================\n",
-        # options={
-        # "fontSize": 12,
-        # "fontFamily": 'Consolas',
-        # "cursorBlink" : False,
-        # "FontWeight" : 'normal',
-        # "minimumContrastRatio" : 7,
-        # 'padding': 5},
+        self.terminal = pn.widgets.Terminal("EVI-DiST (v.0.7.1a)\nSimulation terminal\n==================================\n",
+
         options={
             "foreground": "#53676d",
             "background": "#fbf3db",
@@ -80,8 +77,6 @@ class pgExecution(param.Parameterized):
         sys.stdout = self.terminal 
     
     def panel(self):
-        #parent_directory = os.getcwd()
-        #print(parent_directory)
 
         async def update_progress_bar(progress_queue):
             while True:
@@ -100,7 +95,7 @@ class pgExecution(param.Parameterized):
             progress_queue = asyncio.Queue()
 
             progress = [0]
-            sim = SimLite(self.file_names, self.configs)
+            sim = SimPlus(self.configs["sim_name"], self.file_names["dss_main"])
 
             await asyncio.gather(
                 sim.run(progress, progress_queue),

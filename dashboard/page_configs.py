@@ -26,10 +26,12 @@ class pgConfig(param.Parameterized):
         self.configs['controller'] = self.multi_controller_select.value
         self.configs['adoption'] = self.txt_adoption.value
         self.configs['load_profile'] = self.select_profile_gen.value
-        self.configs['ami_data_file'] = self.selected_file.object
+        self.configs['ami_data_file'] = self.selected_file_xf_level.object
         if self.configs['ami_data_file'] == "Selected file: ":
             self.configs['ami_data_file'] = "No file selected"
+        self.file_names['ami_cust_lvl'] = self.selected_file_cust_level.object
         self.configs['month'] = self.select_month.value
+        self.configs['display_res'] = self.select_display_res.value
 
         return self.file_names, self.configs
     
@@ -62,13 +64,18 @@ class pgConfig(param.Parameterized):
         self.num_prem = int()
         self.num_of_ev = int() 
         self.adoption_name = "Untitled"
+        self.display_res = [15,10,5,1]
 
         self.txt_adoption =  pn.widgets.TextInput(name='Name adoption scenario', placeholder='Untitled', align=('center','center'))
         self.txt_adoption.value = self.adoption_name 
 
-        self.btn_select_file = pn.widgets.Button(name='Browse for AMI data file for selected feeder', button_type='primary', align=('center','center'))
-        self.btn_select_file.on_click(self.select_files)
-        self.selected_file = pn.pane.Markdown("Selected file: ", width=500, renderer='markdown')
+        self.btn_select_file = pn.widgets.Button(name='Browse for transformer level AMI data file for selected feeder', button_type='primary', align=('center','center'))
+        self.btn_select_file_cust_level = pn.widgets.Button(name='Browse for customer level AMI data file for selected feeder', button_type='primary', align=('center','center'))
+        self.selected_file_xf_level = pn.pane.Markdown("Selected file: ", width=500, renderer='markdown')
+        self.selected_file_cust_level = pn.pane.Markdown("Selected file: ", width=500, renderer='markdown')
+        self.btn_select_file.on_click(self.select_files_xf_level)
+        self.btn_select_file_cust_level.on_click(self.select_files_cust_level)
+
 
         self.select_feeder = pn.widgets.Select(name='Select feeder', options=feeders)
         self.select_adoption = pn.widgets.Select(name='Select adoption scenario', options=self.adoption_scenarios)
@@ -76,7 +83,8 @@ class pgConfig(param.Parameterized):
         self.multi_controller_select = pn.widgets.MultiSelect(name='Select controller(s)', value=['Uncontrolled', 'TOU ASAP'], options=['Uncontrolled', 'TOU ASAP', 'TOU ALAP', 'TOU Random'], size=4)
         self.select_profile_gen = pn.widgets.Select(name='Select load profile generation', options=self.load_profiles)
         self.select_month = pn.widgets.Select(name='Select the month of simulation', options=self.months)
-        
+        self.select_display_res = pn.widgets.Select(name='Select result display resolution (minute)', options=self.display_res)
+
         self.info_panel1 = pn.Column(self.update_feeder_info(self.feed))
         self.info_panel2 = pn.Column(self.update_controller_info(self.controllers))
         self.info_panel3 = pn.Column(self.update_load_profile_info(self.load_profiles[0]))
@@ -168,7 +176,7 @@ class pgConfig(param.Parameterized):
         <span style="font-size:12pt; font-weight: bold;">Description: </span></span><span style="font-size:11pt;">{des}</span>  
         """
 
-        return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.btn_select_file, self.selected_file)
+        return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.btn_select_file, self.btn_select_file_cust_level, self.selected_file_xf_level, self.selected_file_cust_level)
     
     def update_adoption_info(self, selection):
 
@@ -180,12 +188,19 @@ class pgConfig(param.Parameterized):
 
         return pn.Column(pn.pane.Markdown(info, width=400, renderer='markdown'), self.txt_adoption)
 
-    def select_files(self, event):
+    def select_files_xf_level(self, event):
         root = Tk()
         root.withdraw()                                        
         root.call('wm', 'attributes', '.', '-topmost', True)   
         file_name = filedialog.askopenfilename(multiple=False)    
-        self.selected_file.object = file_name
+        self.selected_file_xf_level.object = file_name
+
+    def select_files_cust_level(self, event):
+        root = Tk()
+        root.withdraw()                                        
+        root.call('wm', 'attributes', '.', '-topmost', True)   
+        file_name = filedialog.askopenfilename(multiple=False)    
+        self.selected_file_cust_level.object = file_name
 
     b = param.Integer()
     files = param.List()
@@ -200,6 +215,7 @@ class pgConfig(param.Parameterized):
                                      self.multi_controller_select,
                                      self.info_controller_select,
                                      self.select_month,
+                                     self.select_display_res,
                                      width=350)
 
         description_top_row = pn.Row(self.info_panel1,
@@ -210,45 +226,6 @@ class pgConfig(param.Parameterized):
 
         description = pn.Column(description_top_row, description_bottom_row) 
         final = pn.Row(selection_column, description)                                                                      
-
-        # left_1 = pn.Spacer(height=250, width=200, styles={'flex': '1 1 auto'})
-        # middle_1 = pn.Row(
-        #             pn.Column(
-        #             self.select_feeder,
-        #             self.info_feder_select,
-        #             #self.select_control,
-        #             self.multi_controller_select,
-        #             self.info_controller_select,
-        #             self.select_profile_gen,
-        #             height=500,
-        #             width=350),
-        #             pn.Row(
-        #             self.info_panel1,
-        #             self.info_panel2),
-        #             styles={'flex': '3 1 auto'}
-        #             )                
-        
-        # right_1 = pn.Spacer(height=250, width=200, styles={'flex': '1 1 auto'})
-
-        
-        # left_2 = pn.Spacer(height=250, width=200, styles={'flex': '1 1 auto'})
-        # middle_2 = pn.Row(
-        #             pn.Column(
-        #             height=500,
-        #             width=350),
-        #             pn.Row(
-        #             self.info_panel3,
-        #             self.info_panel4),
-        #             styles={'flex': '3 1 auto'}
-        #             )                
-        
-        # right_2 = pn.Spacer(height=250, width=200, styles={'flex': '1 1 auto'})
-
-
-        # top_row = pn.Row(left_1, middle_1, right_1)
-        # bottom_row = pn.Row(left_2, middle_2, right_2)
-
-        # final_pane = pn.Column(top_row, bottom_row)
 
         return final
     

@@ -20,7 +20,9 @@ class pgModes(param.Parameterized):
             self.ready = True
 
         def on_plus_click(event):
-            pn.state.notifications.warning('Plus version is still under development!', duration=4000)
+            self.next_page = 'Plus: choose mode'
+            self.ready = True
+            # pn.state.notifications.warning('Plus version is still under development!', duration=4000)
 
         btn_lite.on_click(on_lite_click)
         btn_plus.on_click(on_plus_click)
@@ -38,7 +40,6 @@ class pgModes(param.Parameterized):
                     pn.Spacer(height=25),
                     #pn.Row(btn_plus, pn.widgets.StaticText(value='OpenDSS grid simulation', align=('center','center')), align=('center', 'center')),
                     pn.Row(btn_plus, align=('center', 'center')),
-                    pn.Spacer(height=25), 
                     #pn.Row(btn_pro, pn.widgets.StaticText(value='Pro explanation', align=('center','center')), align=('center', 'center')),
                     #pn.Row(btn_pro, align=('center', 'center')),
                     sizing_mode='stretch_width'

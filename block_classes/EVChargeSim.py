@@ -1,9 +1,11 @@
+import os
+import sys
+sys.path.append(os.getcwd())
+from pathinit import EVIDIST_ROOT_PATH
 import pandas as pd
 import helics as h
 import json
-
 import logging
-logger = logging.getLogger(__name__)
 
 """
 This class is to hold the EV Sim 
@@ -18,15 +20,16 @@ class EVChargeSim:
     def __init__(self, name='ev_charge_sim', cosim=False, helics_config_path='', timestep_sec=60*5):
         # add important params here
         self.name = name
-        logging.basicConfig(filename=f'{name}.log', encoding='utf-8', level=logging.DEBUG)
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig(filename=EVIDIST_ROOT_PATH + f'/logs/sim_plus/{name}.log', encoding='utf-8', level=logging.DEBUG)
         self.ev_demand = {}
         self.charge_profile_library = {}
-        self.ev_loads = {'evse0':10, 'evse1':10, 'evse2':10}
+        self.ev_loads = {}#{'evse0':10, 'evse1':10, 'evse2':10}
         self.control_setpoints = {}
         # these are for if you want time-step based sim
         self.timestep_sec = timestep_sec
         self.co_simulation = cosim
-        self.time = -1
+        self.time = 0
         self.helics_config_path = helics_config_path
         self.fed = None
         self.publications = []
@@ -41,11 +44,11 @@ class EVChargeSim:
         if self.co_simulation:
             if self.helics_config_path == '':
                 fedinfo = h.helicsCreateFederateInfo()
-                h.helicsFederateInfoSetCoreName(fedinfo, self.name)
+                # h.helicsFederateInfoSetCoreName(fedinfo, self.name)
                 h.helicsFederateInfoSetCoreInitString(fedinfo, "--federates=1")
                 self.fed = h.helicsCreateValueFederate(self.name, fedinfo)
                 self.publications.append(h.helicsFederateRegisterPublication(self.fed, 'ev_loads', h.HelicsDataType.STRING)) # this is published as a json string of a dictionary
-                self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, 'default_controller/control_setpoints', ""))
+                self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, 'controller/control_setpoints', ""))
             else:
                 self.fed = h.helicsCreateValueFederateFromConfig(self.helics_config_path)
             h.helicsFederateSetTimeProperty(self.fed, h.helics_property_time_delta, self.timestep_sec)
@@ -55,13 +58,17 @@ class EVChargeSim:
 
     def run_charge_sim(self, timestep=0):
         # this function uses the profile library and setpoints to determin the actual ev loads
-        ev_loads = {'evse0':10, 'evse1':10, 'evse2':10}
+        #ev_loads = {'evse0':10, 'evse1':10, 'evse2':10}
 
         ##### insert load solver here #####
+        # TODO: add charge acceptance curve here 
 
-        # rules based all on or all off based on time
-        for evse, limit in self.control_setpoints.items():
-            self.ev_loads[evse] = min(ev_loads[evse], limit)
+        ## rules based all on or all off based on time
+        #for evse, limit in self.control_setpoints.items():
+        #    self.ev_loads[evse] = min(ev_loads[evse], limit)
+
+        self.ev_loads = self.control_setpoints
+        ev_loads = self.ev_loads
 
         return ev_loads
 
@@ -77,19 +84,27 @@ class EVChargeSim:
             h.helicsPublicationPublishString(self.publications[0], json.dumps(self.ev_loads))
             control_setpoints = json.loads(h.helicsInputGetString(self.subscriptions[0]))
             if not isinstance(control_setpoints, float):
-                logger.info(f'ev setpoints: {control_setpoints}')
+                self.logger.info(f'ev setpoints: {control_setpoints}')
                 self.control_setpoints = control_setpoints
             else:
-                logger.warning(f'recieved float for control_setpoints, continuing without updating')
+                self.logger.warning(f'recieved float for control_setpoints, continuing without updating')
         return 
+
 
 
 if __name__ == "__main__":
     evse = EVChargeSim(helics_config_path='', cosim=True)
-    logger.debug('charge sim object created')
+    if len(sys.argv)>1:
+        evse.timestep_sec = int(sys.argv[1])
+    evse.logger.debug('charge sim object created')
     evse.setup_charge_sim()
-    for timestep in range(1, 24*3600, 3600):
+    for timestep in range(0, 24*3600, 300):
         evse.output_charger_load()
         ev_load_limits = evse.run_charge_sim()
         evse.advance_time(timestep)
-        logger.info(f'charge sim federate advanced to {timestep}')
+        evse.logger.info(f'charge sim federate advanced to {timestep}')
+
+    # release all
+    h.helicsFederateDisconnect(evse.fed)
+    h.helicsFederateFree(evse.fed)
+    h.helicsCloseLibrary()

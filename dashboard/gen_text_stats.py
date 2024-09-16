@@ -5,9 +5,9 @@ import panel as pn
 def gen_stats_md(data, threshold, dop, controller):
 
         
-        stats_baseload = get_stats(data['baseload'], threshold)
-        stats_evload = get_stats(data['evload'], threshold)
-        stats_total = get_stats(data['total'], threshold)
+        stats_baseload = get_stats(data['baseload'], threshold, dop.res*60)
+        stats_evload = get_stats(data['evload'], threshold, dop.res*60)
+        stats_total = get_stats(data['total'], threshold, dop.res*60)
         ID = data['ID']
 
         num_of_evs = len(dop.mappings['xf_mappings'][dop.feeder][int(ID)]['vehicles'])

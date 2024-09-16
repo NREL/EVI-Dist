@@ -33,7 +33,7 @@ def generate_upsampled_baseload(df, month):
 
     # Generate 1-minute resolution timestamps within the selected range
     new_times = pd.date_range(start=first_monday, end=first_sunday + timedelta(days=1), freq='1min')
-
+    
     # Create a DataFrame with the new timestamps
     new_times_df = pd.DataFrame({'time': new_times})
 
@@ -55,6 +55,10 @@ def generate_upsampled_baseload(df, month):
     # Reorder columns
     upsampled_df = upsampled_df[['day', 'time', 'date'] + [col for col in df.columns if col != 'time']]
 
+    # Downsample
+    removed_last_sample_df = upsampled_df.iloc[:-1:1] # TODO: This needs to work with any AMI data. There is a need to make sure the downsampled baseline profile always matches the ev profile length-wise. 
+
     # Save
-    upsampled_df.to_csv(file_path_to_save, index=True)
+    removed_last_sample_df.to_csv(file_path_to_save, index=True)
+
     print("Completed!")

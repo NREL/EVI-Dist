@@ -14,6 +14,9 @@ import plotly.graph_objs as go
 import plotly.express as px
 import os
 from gen_text_stats import gen_text_stats
+import json
+import io
+import zipfile
 
 from actions import DataOperator 
 import matplotlib.pyplot as plt
@@ -30,33 +33,49 @@ import sys
 parent_directory = os.getcwd()
 
 sys.path.append(parent_directory + "/modules")
+sys.path.append(parent_directory)
 
-from data_structures import Signal
+from modules.data_structures import Signal
       
 class pgDisplay(param.Parameterized):
      
-    file_names = param.Dict()
-    configs = param.Dict()
+    file_names: param.Dict = param.Dict()
+    configs: param.Dict = param.Dict()
+    
+    save_button: pn.widgets.Button = pn.widgets.Button(name='Save File')  # Change param.Action to pn.widgets.Button
+    
+    ready = param.Boolean(default=False)
 
     def __init__(self, **params):
         super().__init__(**params)
-
-        # print(self.file_names)
-        # print(self.configs)
-       
-        paths = {}
-        paths['premise_report'] = self.file_names['premise_report']
-        paths['ev_adoption'] = self.file_names['ev_adoption']
-        paths['baseload_profiles'] = parent_directory + "/data/temp/baseload_profiles.csv"
-        paths['ev_profiles'] = dict()
+        
+        self.paths = {}
+        self.paths['premise_report'] = self.file_names['premise_report']
+        self.paths['ev_adoption'] = self.file_names['ev_adoption']
+        self.paths['ami_cust_lvl'] = self.file_names['ami_cust_lvl']
+        self.paths['baseload_profiles'] = parent_directory + "/data/temp/baseload_profiles.csv"
+        self.paths['ev_profiles'] = dict()
         
         for cntl in self.configs['controller']:
-            paths['ev_profiles'][cntl] = parent_directory + "/data/temp/ev_profiles_" + cntl + ".csv"
+            self.paths['ev_profiles'][cntl] = parent_directory + "/data/temp/ev_profiles_" + cntl + ".csv"
         
-        paths['mappings'] = parent_directory + "/data/mappings/mappings.pkl"
+        self.paths['mappings'] = parent_directory + "/data/mappings/mappings.pkl"
         
         #self.dop = DataOperator(paths, self.configs['feeder'], self.configs['controller']) 
-        self.dop = DataOperator(paths, self.configs) 
+        self.dop = DataOperator(self.paths, self.configs) 
+
+        if os.path.isfile(self.paths['ami_cust_lvl']):
+            print(self.paths['ami_cust_lvl'])
+            print("Total load dict is being generated! This may take some time.")
+            self.total_load_dict = self.dop.gen_total_load_dict()
+            # self.slps = self.dop.do_coincidence_analysis(self.total_load_dict, fig_type="dashboard")
+            # for slp in self.slps:
+            #     slp.fig.tight_layout()
+            self.figs = self.dop.do_coincidence_analysis2(self.total_load_dict, fig_type="dashboard")
+            for fig in self.figs:
+                fig.tight_layout()
+        else:
+            self.total_load_dict = None
 
         self.pane_timeseries = pn.pane.Plotly()
         self.pane_comparison = pn.pane.Plotly()
@@ -72,6 +91,15 @@ class pgDisplay(param.Parameterized):
 
         self.obj_table = Table(self.table.loc[:, ['Transformer ID', 'Bank Size', 'OH/UG', 'Bank Configuration', 'Output Voltage']])
         self.premise_table = self.obj_table.table
+        
+        # self.save_button.on_click(self.save_file)  # Trigger save_file on click
+        
+        self.save_button = pn.widgets.FileDownload(
+            callback=self.get_zip_data, 
+            filename="downloaded_data.zip", 
+            button_type="primary",  
+            label="Save Sim Lite Data"
+        )
 
         self.pane_stats = pn.Column(height=500) 
 
@@ -102,9 +130,63 @@ class pgDisplay(param.Parameterized):
                 #print(f"{row['Transformer ID']} does not exists, index = {index}")
 
         self.selected_row = self.table.iloc[[starting_index]] 
+            
+    def save_session_JSON(self):
+        save_session_dict = {
+            "file_names": dict(self.file_names.items()),
+            "configs": dict(self.configs.items())
+        }
+        
+        for k,v in save_session_dict.items():
+            for k2,v2 in v.items():
+                if k2 == "month":
+                    v[k2] = str(v2)
+                    
+        return save_session_dict
+    
+    def save_file(self, event):
+        file_name_input = pn.widgets.TextInput(name='ZIP File Name', value='saved_data.zip')
 
+        def download_zip(event):
+            # Get file name from input
+            file_name = file_name_input.value 
 
-    def get_selected_xf(self, xf_id, threshold):  
+            # Create zip file in memory
+            zip_buffer = self.get_zip_data()
+            zip_buffer.seek(0)  # Reset the buffer position
+
+            # Trigger the download
+            return pn.io.file.download(zip_buffer, filename=file_name)
+
+        download_button = pn.widgets.Button(name='Download', button_type='primary')
+        download_button.on_click(download_zip)
+
+        return pn.Column(file_name_input, download_button).servable()
+
+    def get_zip_data(self):
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+            # Add CSV files to ZIP
+            for name, path in self.paths.items():
+                if name == "ev_profiles":
+                    for name2, path2 in path.items():
+                        zip_file.write(path2, arcname="ev_profiles_" + name2 + ".csv")  # Use original file names in ZIP
+                elif name == "mappings":
+                    zip_file.write(path, arcname=name + ".pkl")
+                else:
+                    zip_file.write(path, arcname=name + ".csv")  # Use original file names in ZIP
+
+            # Add JSON data to ZIP
+            json_data = json.dumps(dict(self.save_session_JSON().items()), indent=4).encode('utf-8')
+            zip_file.writestr('session_info.json', json_data)  # Save JSON with a specific name
+
+        zip_buffer.seek(0)  # Reset buffer position for reading
+        return zip_buffer
+
+    def get_selected_xf(self, xf_id, threshold):
+        """
+        
+        """
 
         if self.toggle_feeder_plots.value:  
             baseload = self.dop.get_feeder_load()
@@ -120,13 +202,13 @@ class pgDisplay(param.Parameterized):
         # time = np.arange(len(baseload))
         time = self.dop.get_time(self.select_controller.value)
 
-        signal_base_load = Signal(time, baseload, 'Baseload', 60, ('m','kW'))
-        signal_ev_load = Signal(time, ev_load, 'EV load', 60, ('m','kW'))
+        signal_base_load = Signal(time, baseload, 'Baseload',  self.dop.res * 60, ('m','kW'))
+        signal_ev_load = Signal(time, ev_load, 'EV load',  self.dop.res * 60, ('m','kW'))
 
         signal_ev_load_comp = dict()
         signal_combined_load_comp = dict()
         for cntrl in self.configs['controller']:
-            signal_ev_load_comp[cntrl] = Signal(time, ev_load_comp[cntrl], cntrl, 60, ('m','kW'))
+            signal_ev_load_comp[cntrl] = Signal(time, ev_load_comp[cntrl], cntrl,  self.dop.res * 60, ('m','kW'))
             signal_combined_load_comp[cntrl] = signal_base_load + signal_ev_load_comp[cntrl]
             signal_combined_load_comp[cntrl].name =  cntrl       
 
@@ -137,7 +219,20 @@ class pgDisplay(param.Parameterized):
             dataset = {'baseload' : signal_base_load.y, 'evload' : signal_ev_load.y, 'total' : signal_combined_load.y, 'ID' : str(xf_id)}
             gen_text_stats(self.pane_stats, dataset, self.dop, threshold, self.select_controller.value)   
         else:
-            self.pane_stats[:] = [pn.Column("""Turn off **Feeder level plots** to see statistics for individual transformers.""")]
+            
+            #if customer level ami data uploaded, show coincidence analysis plots, otherwise show nothing
+            if self.total_load_dict is not None:
+                
+                mlp_pane = []
+                #for i, slp in enumerate(self.slps):
+                for i, fig in enumerate(self.figs):
+                    #mlp_pane.append(pn.pane.Matplotlib(slp.fig, dpi=100))
+                    mlp_pane.append(pn.pane.Matplotlib(fig, dpi=100))
+                self.pane_stats[:] = [pn.Column(*mlp_pane, scroll=True, height=425)]
+            else:
+                self.pane_stats[:] = [pn.Column("Toggle off **Feeder level plots** to see statistics for individual transformers.",
+                                                """(You can view additional feeder-level plots, such as coincidence analysis, <br/>
+                                                    by uploading customer-level AMI data for the selected feeder on the **Configurations** page.)""")]
 
         x = float(self.selected_row['Longitude_X'])
         y = float(self.selected_row['Latitude_Y'])
@@ -206,15 +301,25 @@ class pgDisplay(param.Parameterized):
             x = self.selected_row['Longitude_X']            
             y = self.selected_row['Latitude_Y']  
 
-            if event.column == 'Transformer ID':
-                self.get_selected_xf(xf, threshold)
+            # if event.column == 'Transformer ID':
+            self.get_selected_xf(xf, threshold)
 
         self.premise_table.on_click(lambda event: click(self, event))
 
         def on_toggle(event):
+            """Event action for toggling whether plots show feeder waveforms or transformer waveforms.
+
+            Args:
+                event (_type_): _description_
+            """
             self.get_selected_xf(int(self.selected_row['Transformer ID']), threshold=int(self.selected_row['Bank Size'])) 
 
         def on_select(event):
+            """Event action for selecting the controller type.
+
+            Args:
+                event (_type_): _description_
+            """
             self.get_selected_xf(int(self.selected_row['Transformer ID']), threshold=int(self.selected_row['Bank Size'])) 
             # Update results for the selected controller
 
@@ -249,7 +354,20 @@ class pgDisplay(param.Parameterized):
         pane_des = pn.pane.Markdown(f"""<span style="font-size:12pt">Feeder: <b>{self.configs['feeder']}</b>, Controller: <b>{self.configs['controller']}</b>, Adoption: <b>{self.configs['adoption']}</b>,  Load profile: <b>{self.configs['load_profile']}</b>
                                         </span>""")
         
-        tabs = pn.Tabs(('Time series', settings1), ('Comparison', settings3), ('Histogram', settings2), ('Stats', pn.Column(pn.Row(pn.widgets.StaticText(value='Show feeder level plots'), self.toggle_feeder_plots, self.select_controller), self.pane_stats)), ('Location', self.folium_pane))
+        # tabs = pn.Tabs(('Time series', settings1), ('Comparison', settings3), ('Histogram', settings2), ('Stats', pn.Column(pn.Row(pn.widgets.StaticText(value='Show feeder level plots'), self.toggle_feeder_plots, self.select_controller), self.pane_stats)), ('Location', self.folium_pane))
+        tabs = pn.Tabs(
+            ('Time series', settings1),
+            ('Comparison', settings3),
+            ('Histogram', settings2),
+            ('Stats', pn.Column(
+                pn.Row(
+                    pn.widgets.StaticText(value='Show feeder level plots'),
+                    *([self.toggle_feeder_plots, self.select_controller] if self.toggle_feeder_plots.value else [self.toggle_feeder_plots])
+                ), 
+                self.pane_stats
+            )),
+            ('Location', self.folium_pane)
+        )
 
         left = pn.Spacer(height=500, styles={'flex': '1 1 auto'})
         middle = pn.Row(
@@ -260,12 +378,6 @@ class pgDisplay(param.Parameterized):
         
         right = pn.Spacer(height=500, styles={'flex': '1 1 auto'})
 
-        app = pn.Column(pane_des, pn.Row(self.premise_table, tabs))
-        # gspec = pn.GridSpec(height=800)
-        # gspec[:,   0  ] = pn.Spacer()
-        # gspec[:,   1:6] = self.premise_table
-        # gspec[:,   6:11] = tabs
-        # gspec[:,   11  ] = pn.Spacer()
-        #app = pn.Column(pane_des, gspec)
+        app = pn.Column(pane_des, pn.Row(self.premise_table, tabs), self.save_button)
         
         return app
