@@ -3,13 +3,14 @@ import os
 from datetime import datetime, timedelta
 import pytz
 
-def generate_upsampled_baseload(df, month):
+def generate_upsampled_baseload(df, month, file_name, timezone):
     # Convert the 'time' column to datetime format
     print("Generating baseload profiles...")
-    file_path_to_save = os.getcwd() + "/data/temp/baseload_profiles.csv"
+    file_path_to_save = os.getcwd() + "/data/temp/" + file_name + ".csv"
 
     df['time'] = pd.to_datetime(df['time'])
-    df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert('America/Denver')
+    #df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert('America/Denver')
+    df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert(timezone)
 
     # Extract the year from the first row of the DataFrame
     year = df['time'].dt.year.iloc[0]
@@ -24,7 +25,8 @@ def generate_upsampled_baseload(df, month):
     first_sunday = first_monday + timedelta(days=6)
 
     # Convert first_monday and first_sunday to timezone-aware datetime objects
-    timezone = pytz.timezone('America/Denver')
+    #timezone = pytz.timezone('America/Denver')
+    timezone = pytz.timezone(timezone)
     first_monday = timezone.localize(first_monday)
     first_sunday = timezone.localize(first_sunday)
 
@@ -54,6 +56,9 @@ def generate_upsampled_baseload(df, month):
 
     # Reorder columns
     upsampled_df = upsampled_df[['day', 'time', 'date'] + [col for col in df.columns if col != 'time']]
+
+    # Reduce the resoultion to float16 (experimental)
+    upsampled_df.iloc[:, 4:] = upsampled_df.iloc[:, 4:].astype('float16')
 
     # Downsample
     removed_last_sample_df = upsampled_df.iloc[:-1:1] # TODO: This needs to work with any AMI data. There is a need to make sure the downsampled baseline profile always matches the ev profile length-wise. 

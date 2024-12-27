@@ -1,6 +1,6 @@
 {
-    "AMI Only" : {
-        "description" : "The AMI data that were collected from the premises will be aggregated to be used as load profiles for transformers in the simulation. Note that AMI data may not be 100% available for all transformers."
+    "AMI Data" : {
+        "description" : "The AMI data that were collected from the premises will be aggregated to be used as load profiles for transformers in the simulation. Note that AMI data may not be 100% available for all transformers. (<u>The time zone of the uploaded AMI data is assumed in UTC. Specify the time zone below for conversion. Leave it as 'UTC' if no conversion is needed.</u>)"
     },
 
     "AMI + Synthetic load"  : {

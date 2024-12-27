@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>EVI-DiST Plus - EVI-DiST Documentation (v1.0.0)</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../css/brands.min.css" rel="stylesheet">
+        <link href="../css/solid.min.css" rel="stylesheet">
+        <link href="../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/yaml.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/rust.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">EVI-DiST Documentation (v1.0.0)</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../installation/" class="nav-link">Installation</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">User guide</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../lite/" class="dropdown-item">EVI-DiST Lite</a>
+</li>
+                                    
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">EVI-DiST Plus</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">About</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../license.md" class="dropdown-item">License</a>
+</li>
+                                    
+<li>
+    <a href="../release-notes.md" class="dropdown-item">Release Notes</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../lite/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" class="nav-link disabled">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                              <button id="theme-menu" aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static" aria-label="Toggle theme" class="nav-link dropdown-toggle">
+                                <i class="fa-solid fa-circle-half-stroke fa-fw"></i>
+                                <span class="d-lg-none ms-2">Toggle theme</span>
+                              </button>
+                              <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                  <button class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="true">
+                                    <i class="fa-solid fa-sun fa-fw"></i>
+                                    <span class="ms-2">Light</span>
+                                    <i class="fa-solid fa-check ms-auto"></i>
+                                  </button>
+                                </li>
+                                <li>
+                                  <button class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                    <i class="fa-solid fa-moon fa-fw"></i>
+                                    <span class="ms-2">Dark</span>
+                                    <i class="fa-solid fa-check ms-auto d-none"></i>
+                                  </button>
+                                </li>
+                                <li>
+                                  <button class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto" aria-pressed="false">
+                                    <i class="fa-solid fa-circle-half-stroke fa-fw"></i>
+                                    <span class="ms-2">Auto</span>
+                                    <i class="fa-solid fa-check ms-auto d-none"></i>
+                                  </button>
+                                </li>
+                              </ul>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <script src="../js/darkmode.js"></script>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#evi-dist-plus" class="nav-link">EVI-DiST Plus</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#1-mode-selection" class="nav-link">1. Mode Selection</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#2-run-a-new-sim-or-load-session" class="nav-link">2. Run a New Sim or Load Session</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#3-uploading-input-files" class="nav-link">3. Uploading Input Files</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#4-simulation-configuration" class="nav-link">4. Simulation Configuration</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#5-running-the-simulation" class="nav-link">5. Running the Simulation</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#6-displaying-results" class="nav-link">6. Displaying Results</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#7-comparing-multiple-simulation-runs" class="nav-link">7. Comparing Multiple Simulation Runs</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="evi-dist-plus">EVI-DiST Plus</h1>
+<p>This page guides you through the steps to run a simulation using EVI-DiST Plus.</p>
+<hr />
+<h2 id="1-mode-selection">1. Mode Selection</h2>
+<p>When you start <strong>EVI-DiST</strong> by running <code>python run.py</code>, it welcomes you with the following <strong>mode selection</strong> page. Click <code>EVI-DiST Plus</code> button to get started with <strong>the Plus</strong> version.</p>
+<p><img alt="" src="../img/plus_welcome.png" /></p>
+<hr />
+<h2 id="2-run-a-new-sim-or-load-session">2. Run a New Sim or Load Session</h2>
+<p>After selecting <strong>EVI-DiST Plus</strong>, you will be directed to a page where you can choose to start a new simulation or load a previously saved simulation file. You will have the option to save the simulation results after the simulation is completed (refer to <strong>Load simulation files</strong> section from the navigation list). Click <strong>Run sim from scratch</strong> option to run a new simulation.</p>
+<p><img alt="" src="../img/plus_choose_mode.png" /></p>
+<h3 id="2a-load-simulation-files">2a. Load Simulation Files</h3>
+<p>To load a previously saved simulation file, click <strong>Browse</strong> and select the saved session <code>.zip</code> file. The default directory to load Plus mode simulation files from is <code>/EVI-Dist/data/saved_sessions_plus/</code>. Once the file is selected, click <strong>Upload selected files</strong> and wait until a banner pops up confirming the files were loaded successfully. Then click <strong>Next</strong>, which will skip directly to the <strong>Displaying Results</strong> page.</p>
+<p><img alt="" src="../img/plus_load_saved_session.png" /></p>
+<hr />
+<h2 id="3-uploading-input-files">3. Uploading Input Files</h2>
+<p><strong>EVI-DiST Plus</strong>  requires three input files: <strong>main OpenDSS file</strong>, <strong>premise report file</strong>, and <strong>EV adoption file</strong>. The default directories to load these files from are <code>/EVI-Dist/inputs/opendss_model</code>, <code>/EVI-Dist/data/premise_data</code>, <code>/EVI-Dist/data/adoptions</code>, respectively. Each file is explained below.</p>
+<p><img alt="" src="../img/plus_upload_files.png" /></p>
+<ul>
+<li>
+<p><strong>OpenDSS main file</strong>: OpenDSS models are typically defined using multiple files, all stored in the same directory. OpenDSS loads a model using the <strong>main OpenDSS file</strong> (named <code>Master.dss</code> in this guide and the figure above) references each <code>.dss</code> file within the same directory as <code>Master.dss</code>. The OpenDSS model will also contain a set of loadshapes assigned to different nodes to represent base residential loads.</p>
+</li>
+<li>
+<p><strong>Premise report file</strong>: The <strong>premise report file</strong> primarily provides mapping between service transformers and premise numbers, which allows EV charging loads to be properly injected into the openDSS simulation.
+This csv file should contain columns related to transformer and premise information such as <code>Feeder</code>, <code>Premise Number</code>, <code>Lot Centroid</code>, <code>Longitude_X</code>, <code>Latitude_Y</code>, <code>Community</code>, <code>OG/UG</code>, <code>Transformer ID</code>, <code>Bank Size</code>, <code>Bank Configuration</code>, <code>Output Voltage</code>. An example of a premise report csv file is shown below.</p>
+</li>
+</ul>
+<p><img alt="" src="../img/premise_report.png" /></p>
+<ul>
+<li><strong>EV adoption file</strong>: The <strong>EV adoption file</strong> contains all the EV charge events for the simulation. The location that EV charging loads are modeled within the OpenDSS simulation is determined by the premise numbers. In the event that the assigned premise number does not have an associated node within the OpenDSS model, the EV charging load is directly connected to the assigned service transformer.
+This csv file should contain columns related to EV charging events such as <code>Veh_ID_Num</code>, <code>Premise Number</code>, <code>Transformer ID</code>, <code>park_start_timestamp</code>, <code>park_end_timestamp</code>, <code>park_time_seconds</code>, <code>energy_kwh</code>, <code>start_soc</code>, <code>end_soc</code>. An example of an EV adoption csv file is shown below.</li>
+</ul>
+<p><img alt="" src="../img/adoption_file.png" /></p>
+<p>Once you select the necessary files, click the <code>Upload selected files</code> button. EVI-DiST will extract and process the uploaded files and prompt a success message in the lower-right corner as follows. The <code>Next</code> button in the upper-right corner should now be enabled, allowing you to proceed to the next page by clicking it.</p>
+<hr />
+<h2 id="4-simulation-configuration">4. Simulation Configuration</h2>
+<p>After the simulation input files are selected and successfully loaded, you can proceed to the configuration page. There are 5 fields to fill out:</p>
+<ol>
+<li><code>Enter simulation name</code>: enter a custom name for the simulation, including any details you'd like to specify.</li>
+<li><code>Select the month of simulation</code>: choose the month that EV charging events in <strong>EV adoption file</strong> will be filtered by. The available months come from the <strong>EV adoption file</strong>.</li>
+<li><code>Select the day of week of simulation</code>: choose the day of week that EV charging events in <strong>EV adoption file</strong> will be filtered by.</li>
+<li><code>Select feeder</code>: choose the feeder that EV charging events in <strong>EV adoption file</strong> will be filtered by. <strong>NOTE</strong>: be sure that the selected feeder name matches the feeder that the <strong>main OpenDSS file</strong> is for, otherwise the simulation will not properly model EV charging.</li>
+<li><code>Select control</code>: choose the EV charging controller to use in the simulation. When a controller is selected, a text box to the right of the controller list will provide details on the controller. The available controllers are <code>Uncontrolled</code>, <code>TOU ASAP</code>, <code>TOU ALAP</code>, <code>TOU Random</code>, <code>FCFC</code>, and <code>FCFC + SM50</code>. <strong>EVI-DiST Plus</strong> only supports selecting a single controller for simulation.</li>
+</ol>
+<p><img alt="" src="../img/plus_configs.png" /></p>
+<p>Once the simulation is configured, proceed to the next page by clicking the <code>Next</code> button.</p>
+<hr />
+<h2 id="5-running-the-simulation">5. Running the Simulation</h2>
+<p>Begin running the simulation by clicking the <code>Start simulation</code> button. A progress bar and the simulation terminal will provide feedback on the status of the simulation.</p>
+<p><strong>EVI-DiST Plus</strong> co-simulation consists of three components all managed through a <strong>Helics broker</strong> : <strong>Grid sim</strong>, <strong>Controller sim</strong>, and <strong>Charging sim</strong>. The simulation is preset to run a 24-hour simulation with a 5-minute resolution, starting at 06:00 AM.</p>
+<p>The simulation terminal will display when each co-simulation completes. After each co-simulation is complete the simulation data must be processed. This may take some time depending on your computer. You will know when you can proceed to the next page when the terminal prints out "Simulation data processed." and the <code>Next</code> button in the upper-right corner is enabled.</p>
+<p><img alt="" src="../img/plus_run_sim.png" /></p>
+<hr />
+<h2 id="6-displaying-results">6. Displaying Results</h2>
+<p>Simulation results can be viewed and analyzed on this page. You either reached this page after running a simulation or loaded simulation results as discussed in <strong>Section 2a</strong>. At the top of the page is a button to save simulation results. <strong>Simulation results will not be saved unless you manually save them</strong>. After clicking the <code>Save Simulation Results</code> button, wait a little bit for a dialog window to pop up to choose the name and directory to save the simulation results <code>.zip</code> file.
+There is also a button to open a new tab session, so multiple simulations can be compared side-by-side. Refer to <strong>Section 7</strong> for more information.</p>
+<p>This display results page is organized into 5 sections: <strong>Simulation information summary</strong>, <strong>Transformer Loading Summary</strong>, <strong>Lines Loading Summary</strong>, <strong>PCC Bus Voltage Summary</strong>, and <strong>Analyze Individual Elements</strong>. Each section can be collapsed per the user's preference. Continue reading for information on each section.</p>
+<p>The <strong>Simulation information summary</strong> displays key simulation information to provide context on the results being displayed, including the <strong>EV charging controller</strong>. Within this section, information on the feeder and the simulation results are given. This includes the <strong>number of transformers</strong> within the feeder network, <strong>number of premises</strong>, <strong>total number of EVs</strong> being charged by the feeder network, and the <strong>ratio of EV charge events</strong> that were completed during the simulation (which is subject to the charging controller). <strong>NOTE</strong>: the <strong>total number of EVs</strong> is based on the number of EVs that had a charging event within the simulated month and day, NOT every EV that is charged by the feeder network in the charge events file. Additionally, a charge event is NOT counted in the <strong>ratio of EV charge events</strong> metric if its charging session continues beyond the simulation time.</p>
+<p><img alt="" src="../img/plus_display_results_all.png" /></p>
+<h3 id="6a-transformer-loading-summary">6a. Transformer Loading Summary</h3>
+<p>This section provides a summmary of the transformer kVA overloads within the feeder network. A bar graph displays the total number of transformers within the feeder network (in blue) and the total number of overloaded transfomers (in red), catagorized by their kVA rating. A list of the overloaded transformer names and ratings is displayed to the left of the bar graph. You can read or copy a transformer name to then view more detailed information in the <strong>Analyze Individual Elements</strong> section below.</p>
+<p><img alt="" src="../img/plus_display_transformers_summary.png" style="height:75%;width:75%" /></p>
+<p>There are three tuning parameters for the transformer overloading bar graph and table:</p>
+<ol>
+<li>Toggle between <code>Consecutive Overloading Duration</code> or <code>Total Overloading Duration</code>:<ul>
+<li><code>Consecutive Overloading Duration</code>: a transformer is considered overloaded if it <strong>consistently and consecutively</strong> spends time exceeding the loading % cut-off for the defined duration. For example, consider a 100% loading cut-off for a 30 minute duration. A transformer <strong>WOULD NOT</strong> be considered overloaded if it was loaded for 15-min at 100%, followed by 15-min at 90%, followed by 15-min at 100% again.</li>
+<li><code>Total Overloading Duration</code>: a transformer is considered overloaded if it spends a <strong>total combined</strong> time exceeding the loading % cut-off for the defined duration. For example, consider a 100% loading cut-off for a 30 minute duration. A transformer <strong>WOULD</strong> be considered overloaded if it was loaded for 15-min at 100%, followed by 15-min at 90%, followed by 15-min at 100% again.</li>
+</ul>
+</li>
+<li>The <code>Transformer loading Cut-off (%)</code> determines the cut-off point, defined as a percentage of its kVA rating, in which a transformer is considered overloaded. Adjusting this value can provide insight on the severity of transformer overloads in this feeder network.</li>
+<li>The <code>Transformer Overloading Duration (min)</code> determines the time that a transformer must spend exceeding the loading cut-off % for it to be considered overloaded. Adjusting this value can provide insight on the severity of transformer overloads in this feeder network. When <code>Transformer Overloading Duration (min): 0</code>, the overloading duration defaults to a single step size of the simulation (i.e., 5-min).</li>
+<li>When the desired tuning parameters are selected, press the <code>Apply</code> button for the bar graph and table to be updated.</li>
+</ol>
+<h3 id="6b-lines-loading-summary">6b. Lines Loading Summary</h3>
+<p>This section provides a summmary of the distribution line Ampere overloads within the feeder network. A bar graph displays the total length (in miles) of lines within the feeder network (in blue) and the total length (in miles) of overloaded lines (in red), catagorized by their line codes. A list of the overloaded line names and ratings is displayed to the left of the bar graph. Primary and secondary lines are summarized separately. You can read or copy a line name to then view more detailed information in the <strong>Analyze Individual Elements</strong> section below.</p>
+<p><img alt="" src="../img/plus_display_lines_summary.png" style="height:75%;width:75%" /></p>
+<p>There are three tuning parameters for the line overloading bar graphs and tables:</p>
+<ol>
+<li>Toggle between <code>Consecutive Overloading Duration</code> or <code>Total Overloading Duration</code>:<ul>
+<li><code>Consecutive Overloading Duration</code>: a line is considered overloaded if it <strong>consistently and consecutively</strong> spends time exceeding the loading % cut-off for the defined duration. For example, consider a 100% loading cut-off for a 30 minute duration. A line <strong>WOULD NOT</strong> be considered overloaded if it was loaded for 15-min at 100%, followed by 15-min at 90%, followed by 15-min at 100% again.</li>
+<li><code>Total Overloading Duration</code>: a line is considered overloaded if it spends a <strong>total combined</strong> time exceeding the loading % cut-off for the defined duration. For example, consider a 100% loading cut-off for a 30 minute duration. A line <strong>WOULD</strong> be considered overloaded if it was loaded for 15-min at 100%, followed by 15-min at 90%, followed by 15-min at 100% again.</li>
+</ul>
+</li>
+<li>The <code>Lines loading Cut-off (%)</code> determines the cut-off point, defined as a percentage of its Ampere rating, in which a line is considered overloaded. Adjusting this value can provide insight on the severity of line overloads in this feeder network.</li>
+<li>The <code>Lines Overloading Duration (min)</code> determines the time that a line must spend exceeding the loading cut-off % for it to be considered overloaded. Adjusting this value can provide insight on the severity of line overloads in this feeder network. When <code>Lines Overloading Duration (min): 0</code>, the overloading duration defaults to a single step size of the simulation (i.e., 5-min).</li>
+<li>When the desired tuning parameters are selected, press the <code>Apply</code> button for the bar graph and table to be updated.</li>
+</ol>
+<h3 id="6c-pcc-voltage-summary">6c. PCC Voltage Summary</h3>
+<p>This section provides a summary of the voltage minimums of the PCC buses within the feeder network. A histogram displays the distribution of the minimum voltage of all PCC buses. The minimum voltage considers each phase of the bus. A list of PCC buses that had a voltage below the user-defined minumum for a user-defined duration is displayed to the left of the histogram. You can read or copy a bus name to then view more detailed information in the <strong>Analyze Individual Elements</strong> section below.</p>
+<p><img alt="" src="../img/plus_display_pcc_voltage_summary.png" style="height:75%;width:75%" /></p>
+<p>There are three tuning parameters for the PCC bus under voltage histogram and table:</p>
+<ol>
+<li>Toggle between <code>Consecutive Overloading Duration</code> or <code>Total Overloading Duration</code>:<ul>
+<li><code>Consecutive Under Voltage Duration</code>: a bus is considered under voltage if it <strong>consistently and consecutively</strong> spends time below the per-unit voltage limit for the defined duration. For example, consider a per-unit voltage limit of 0.95 for a 30 minute duration. A bus <strong>WOULD NOT</strong> be considered under voltage if it was loaded for 15-min at 100%, followed by 15-min at 90%, followed by 15-min at 100% again.</li>
+<li><code>Total Under Voltage Duration</code>: a bus is considered under voltage if it spends a <strong>total combined</strong> time exceeding the per-unit voltage limit for the defined duration. For example, consider a per-unit voltage limit of 0.95 for a 30 minute duration. A bus <strong>WOULD</strong> be considered under voltage if it was loaded for 15-min at 100%, followed by 15-min at 90%, followed by 15-min at 100% again.</li>
+</ul>
+</li>
+<li>The <code>PCC Bus Voltage Cut-off (p.u.)</code> determines the cut-off point, defined as per unit of its rated voltage, in which a bus is considered under voltage. Adjusting this value can provide insight on the severity of bus under voltage in this feeder network. <strong>NOTE</strong>: this cut-off value does not affect the histogram distribution, only the table of PCC buses that had under voltage. This limit is visualized on the histogram plot as a dotted vertical line at the selected per-unit voltage value.</li>
+<li>The <code>PCC Bus Overloading Duration (min)</code> determines the time that a bus must spend exceeding the loading cut-off % for it to be considered overloaded. Adjusting this value can provide insight on the severity of bus under voltage in this feeder network. When <code>PCC Bus Overloading Duration (min): 0</code>, the overloading duration defaults to a single step size of the simulation (i.e., 5-min).</li>
+<li>When the desired tuning parameters are selected, press the <code>Apply</code> button for the bar graph and table to be updated.</li>
+</ol>
+<h3 id="6d-analyze-individual-transformer">6d. Analyze Individual Transformer</h3>
+<p>One of the three tabs within the <strong>Analyze Individual Elements</strong> section allows you to view details on specific transformer within the Feeder network.
+The table here lists the following details of each transformer, where each column can be filtered using the select/text-box below the headers:</p>
+<ul>
+<li><code>Name (ID)</code>: the name assigned to the transformer. This will match the names in the list of overloaded transformers in the <strong>Transformer Loading Summary</strong> section. You can filter for a specific transformer or for a subset of transformers that have similar names by entering the transformer name in the <code>== X</code> textbox.</li>
+<li><code>Rating (kVA)</code>: the power rating of the transformer in kVA. You can filter for a subset of transformers with a certain power rating(s) using <code>&lt;select&gt;</code> dropdown list.</li>
+<li><code>Max Load Power (%)</code>: the maximum load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had a max load power greater than the specified value.</li>
+<li><code>Avg Load Power (%)</code>: the average load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had an avg load power greater than the specified value.</li>
+<li><code>Min Load Power (%)</code>: the minimum load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had a min load power greater than the specified value.</li>
+<li><code>Phases (#)</code>: the number of output (LV side) phases of the transformer. The <code>&lt;select&gt;</code> dropdown list will filter the list of transformers to match the number(s) of phases selected.</li>
+<li><code>Premises (#)</code>: the number of premises that this transformer supplies. You can filter transformers that have a mimimum number of premises using the <code>&gt;= X</code> textbox.</li>
+<li><code>EVs (#)</code>: the number of EVs that had a charging event supplied by this transformer. <strong>NOTE</strong>: this does not tell you the TOTAL number of EVs that charge using this transformer based on the input charge event file. It will only tell you the number of EVs that had a charging event during the simulation month and day. Selecting a different day and month may result in a different number of EVs. You can filter transformers that have a minimum number of premises using the <code>&gt;= X</code> textbox.</li>
+<li><code>Charge Events Completed (%)</code>: the percentage of charge events that completed during the simulation. This number does not count charging sessions that continue past the end of the simulation. You can filter transformers that have a maximum number of charge events completed using the <code>&lt;= X</code> textbox.</li>
+</ul>
+<p>Clicking on a transformer row in the table will select that transformer and a time series plot of its load power magnitude will be displayed below the table. It's baseload, the combined EV charging load, and the indivdual charging profiles of each EV are shown as traces. This graph is interactive and a subset of power profiles can be selected, or the graph can be zoomed in for better detail.</p>
+<p><img alt="" src="../img/plus_display_transformers.png" style="height:75%;width:75%" /></p>
+<p>By default the <code>Time Series</code> tab is open, which displays the power time series. You can view the transformer loading power histogram by clicking the <code>Histogram</code> tab. This plot shows the total duration (in hours) the transformer spent at a specific kVA load level.</p>
+<p><img alt="" src="../img/plus_display_transformers_histogram.png" style="height:60%;width:60%" /></p>
+<h3 id="6e-analyze-individual-lines">6e. Analyze Individual Lines</h3>
+<p>One of the three tabs within the <strong>Analyze Individual Elements</strong> section allows you to view details on specific distriubtion lines within the Feeder network.
+The table here lists the following details of each line, where each column can be filtered using the select/text-box below the headers:</p>
+<ul>
+<li><code>Name (ID)</code>: the name assigned to the distribution line. This will match the names in the list of overloaded lines in the <strong>Lines Loading Summary</strong> section. You can filter for a specific line or for a subset of lines that have similar names by entering the line name in the <code>== X</code> textbox.</li>
+<li><code>Type (str)</code>: specifies whether this line is part of the primary or secondary distribution network. Filter for the type using the <code>&lt;select&gt;</code> dropdown list.</li>
+<li><code>Line Code (str)</code>: the assigned line code within the OpenDSS model. Filter for a specific line code(s) using the <code>&lt;select&gt;</code> dropdown list.</li>
+<li><code>Length (kft)</code>: the length of the distribution line in thousands of feet. Filter for a minimum line length using the <code>&gt;= X</code> textbox.</li>
+<li><code>Phases (#)</code>: the number of phases of the line. The <code>&lt;select&gt;</code> dropdown list will filter the list of lines to match the number(s) of phases selected.</li>
+<li><code>Rating (A)</code>: the max current rating of the line in Amperes. Filter for a minimum current rating using the <code>&gt;=X</code> textbox.</li>
+<li><code>Max Load (%)</code>: the maximum load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had a max load current greater than the specified value.</li>
+<li><code>Avg Load (%)</code>: the average load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had an avg load current greater than the specified value.</li>
+<li><code>Min Load (%)</code>: the minimum load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had a min load current greater than the specified value.</li>
+</ul>
+<p>Clicking on a line row in the table will select that line and a time series plot of its load current magnitude will be displayed below the table. Each individual phase current is shown as traces. This graph is interactive and a subset of line phases can be selected, or the graph can be zoomed in for better detail.</p>
+<p><img alt="" src="../img/plus_display_lines.png" style="height:75%;width:75%" /></p>
+<p>By default the <code>Time Series</code> tab is open, which displays the current time series. You can view the line loading current histogram by clicking the <code>Histogram</code> tab. This plot shows the total duration (in hours) the line spent at a specific current load level.</p>
+<p><img alt="" src="../img/plus_display_lines_histogram.png" style="height:60%;width:60%" /></p>
+<h3 id="6f-analyze-individual-buses">6f. Analyze Individual Buses</h3>
+<p>One of the three tabs within the <strong>Analyze Individual Elements</strong> section allows you to view details on specific buses within the Feeder network.
+The table here lists the following details of each bus, where each column can be filtered using the select/text-box below the headers:</p>
+<ul>
+<li><code>Bus (ID)</code>: the name assigned to the bus. This will match the names in the list of undervoltage buses in the <strong>PCC Bus Voltage Summary</strong> section. You can filter for a specific bus or for a subset of buses that have similar names by entering the bus name in the <code>== X</code> textbox.</li>
+<li><code>Is PCC (Y/N)</code>: specifies whether this bus is a PCC. Filter for where it is a PCC using the <code>&lt;select&gt;</code> dropdown list.</li>
+<li><code>Phases (#)</code>: the number of phases of the bus. The <code>&lt;select&gt;</code> dropdown list will filter the list of buses to match the number(s) of phases selected.</li>
+<li><code>Min |V| (p.u.)</code>: the minimum voltage of the bus in per unit. Entering a per unit value in the <code>&gt;= X%</code> textbox will filter the list of buses that had a min voltage greater than the specified value.</li>
+<li><code>Avg |V| (p.u.)</code>: the average voltage of the bus in per unit. Entering a per unit value in the <code>&gt;= X%</code> textbox will filter the list of buses that had an avg voltage greater than the specified value.</li>
+<li><code>Max |V| (p.u.)</code>: the maximum voltage of the bus in per unit. Entering a per unit value in the <code>&gt;= X%</code> textbox will filter the list of buses that had a max voltage greater than the specified value.</li>
+</ul>
+<p>Clicking on a bus row in the table will select that bus and a time series plot of its voltage magnitude will be displayed below the table. Each individual bus phase voltage is shown as traces. This graph is interactive and a subset of bus phases can be selected, or the graph can be zoomed in for better detail.</p>
+<p><img alt="" src="../img/plus_display_buses.png" style="height:75%;width:75%" /></p>
+<p>By default the <code>Time Series</code> tab is open, which displays the power time series. You can view the bus voltage (p.u.) histogram by clicking the <code>Histogram</code> tab. This plot shows the total duration (in hours) the bus spent at a specific voltage level.</p>
+<p><img alt="" src="../img/plus_display_buses_histogram.png" style="height:60%;width:60%" /></p>
+<hr />
+<h2 id="7-comparing-multiple-simulation-runs">7. Comparing Multiple Simulation Runs</h2>
+<p>While a single instance of the <strong>Display Results</strong> page only supports viewing the results of a single simulation, it is possible to perform a side-by-side comparison of different simulations by opening the secondary results in another tab. Clicking the <code>Open New Tab Session</code> button opens a new browser tab to the main page of <strong>EVI-DiST</strong>. Follow the steps outlined in this guide to load previous simulation results from a <code>.zip</code> file. You can splitscreen the two open <strong>Display Results</strong> pages, as shown in the screenshot below, to view and compare the results.</p>
+<p><img alt="" src="../img/plus_display_compare.png" /></p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="../mathjax-config.js"></script>
+        <script src="../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

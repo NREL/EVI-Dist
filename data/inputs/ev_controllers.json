@@ -16,9 +16,15 @@
     "description" : "All EVs are charged (at rated power) only during off-peak periods based on a TOU price tariff with random charging start times to avoid concurrent charging overload."
 },
 
-"Coordinated" : {
-    "description" : "EVs connected to the same service transformer coordinate their charging to avoid transformer overloading. In ideal case, the transformer loading is assumed to be monitored by controller."
+"FCFS" : {
+    "description" : "EVs connected to the same service transformer are charged on a first-come, first-served basis to prevent transformer overloading. The first EV to connect receives a larger share of the available capacity, while subsequent EVs are allocated the remaining capacity in smaller portions. <br><br> Note: You need to upload AMI data for P and Q profiles."
+},
+
+"FCFS + SM" : {
+    "description" : "This controller option also follows the first-come, first-served principle, but it also ensures that all EVs receives a minimum average percentage of the available power capacity that can be adjusted using the slider below. <br><br> Note: You need to upload AMI data for P and Q profiles."
+},
+
+"Equal Shares" : {
+    "description" : "The remaining transformer capacity will be distributed evenly among all connected EVs. <br><br> Note: You need to upload AMI data for P and Q profiles."
 }
-
-
 }

@@ -86,7 +86,7 @@ class LinePlot(Plot):
         self.signal = signal
         self.params = params
         self.fig = go.Figure()
-        self.color_seq = px.colors.qualitative.D3
+        self.color_seq = px.colors.qualitative.D3 * 4
 
     def gen_plot(self):
         
@@ -161,10 +161,10 @@ class LinePlot(Plot):
 
         return self.fig
 
-    def add_trace(self, signal : dict, color_seq : int):
+    def add_trace(self, signal : dict, color_seq : int, dash :str = 'solid'):
         #print(self.color_seq)
         #print(type(print(self.color_seq)))
-        trace = go.Scatter(x=signal.x, y=signal.y, name=signal.name, showlegend=True, line=dict(color=self.color_seq[color_seq]))
+        trace = go.Scatter(x=signal.x, y=signal.y, name=signal.name, showlegend=True, line=dict(dash=dash,color=self.color_seq[color_seq]))
         self.fig.add_trace(trace)
 
 class SimpleLinePlot(Plot):

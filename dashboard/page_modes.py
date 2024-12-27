@@ -20,7 +20,7 @@ class pgModes(param.Parameterized):
             self.ready = True
 
         def on_plus_click(event):
-            self.next_page = 'Plus: choose mode'
+            self.next_page = '[Plus] choose mode'
             self.ready = True
             # pn.state.notifications.warning('Plus version is still under development!', duration=4000)
 
@@ -49,5 +49,4 @@ class pgModes(param.Parameterized):
             )
 
 
-        
-        
+

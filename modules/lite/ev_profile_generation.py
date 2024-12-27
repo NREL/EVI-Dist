@@ -150,21 +150,24 @@ def generate_timestamps(row):
 
 def calculate_charging_time(row):
     try:
-        return int(row['energy_kwh'] / row['rate'] * 60)
+        #return int(row['energy_kwh'] / row['rate'] * 60)
+        charging_time = int(row['energy_kwh'] / row['max_charge_rate'] * 60)
+        return charging_time
     except (ZeroDivisionError, KeyError, TypeError):
         return None
     
-def calculate_charge_start_time_TOU_ASAP(row):
+def calculate_charge_start_time_TOU_ASAP(row, selected_mode : str = 'lite'):
     #row = df.iloc[1723]
     total_charging_time = row['total_charging_time']
     low_price_period = row['low_price_period']
     low_price_timestamps = row['low_price_timestamps']
-    
-    # park_start_timestamp = datetime.strptime(row['park_start_timestamp'], '%H:%M:%S').time() 
-    # park_end_timestamp = datetime.strptime(row['park_end_timestamp'], '%H:%M:%S').time() 
 
-    park_start_timestamp = row['park_start_timestamp']
-    park_end_timestamp = row['park_end_timestamp'] 
+    if selected_mode != 'lite':
+        park_start_timestamp = datetime.strptime(row['park_start_timestamp'], '%H:%M:%S').time() 
+        park_end_timestamp = datetime.strptime(row['park_end_timestamp'], '%H:%M:%S').time() 
+    else:
+        park_start_timestamp = row['park_start_timestamp']
+        park_end_timestamp = row['park_end_timestamp'] 
     
     # Check if low_price_timestamps is not empty and has at least one tuple
     if low_price_timestamps and len(low_price_timestamps[0]) == 2:
@@ -172,7 +175,10 @@ def calculate_charge_start_time_TOU_ASAP(row):
         
         # Condition 1: total_charging_time <= low_price_period
         if total_charging_time <= low_price_period:
-            return start_low_price
+            if start_low_price < park_start_timestamp:
+                return park_start_timestamp
+            else:
+                return start_low_price
         
         # Condition 2: total_charging_time > low_price_period
         else:
@@ -188,16 +194,17 @@ def calculate_charge_start_time_TOU_ASAP(row):
         # return start_low_price
     return None
 
-def calculate_charge_start_time_TOU_ALAP(row):
+def calculate_charge_start_time_TOU_ALAP(row, selected_mode : str = 'lite'):
     total_charging_time = row['total_charging_time']
     low_price_period = row['low_price_period']
     low_price_timestamps = row['low_price_timestamps']
-    
-    # park_start_timestamp = datetime.strptime(row['park_start_timestamp'], '%H:%M:%S').time() 
-    # park_end_timestamp = datetime.strptime(row['park_end_timestamp'], '%H:%M:%S').time() 
 
-    park_start_timestamp = row['park_start_timestamp']
-    park_end_timestamp = row['park_end_timestamp'] 
+    if selected_mode != 'lite':    
+        park_start_timestamp = datetime.strptime(row['park_start_timestamp'], '%H:%M:%S').time() 
+        park_end_timestamp = datetime.strptime(row['park_end_timestamp'], '%H:%M:%S').time() 
+    else:
+        park_start_timestamp = row['park_start_timestamp']
+        park_end_timestamp = row['park_end_timestamp'] 
 
     # Check if low_price_timestamps is not empty and has at least one tuple
     if low_price_timestamps and len(low_price_timestamps[0]) == 2:
@@ -259,7 +266,7 @@ def calculate_charge_start_time_TOU_random(start_time, end_time):
 
 async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, progress, progress_queue):
     # Create a list to save the daily EV charging profiles
-
+    #df_feeder_month['max_charge_rate'] = df_feeder_month.apply(lambda row: min(row['rate'], row['Max AC Power kW']), axis=1)
     df_list = [] 
     
     progress_ = progress[0]
@@ -316,7 +323,8 @@ async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, 
                 charge_start_time = row['charge_start_time_TOU_random']
 
   
-            charge_time_minute = int(row['energy_kwh']/row['rate'] * 60)
+            #charge_time_minute = int(row['energy_kwh']/row['rate'] * 60)
+            charge_time_minute = int(row['energy_kwh']/row['max_charge_rate'] * 60)
 
             charge_end_time = charge_start_time + np.timedelta64(charge_time_minute,'m')          
 
@@ -331,9 +339,11 @@ async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, 
                     charge_end_time = charge_end_time - np.timedelta64(24,'h')
                     
                 df_charging_power_profile.loc[(df_charging_power_profile.time>=charge_start_time)&\
-                                                (df_charging_power_profile.time<charge_end_time),'power'] += row['rate']
+                                                #(df_charging_power_profile.time<charge_end_time),'power'] += row['rate']
+                                                (df_charging_power_profile.time<charge_end_time),'power'] += row['max_charge_rate']
                 df_charging_power_profile.loc[(df_charging_power_profile.time>=charge_start_time)&\
-                                                (df_charging_power_profile.time<charge_end_time), Veh_ID_Num] = row['rate']    
+                                                #(df_charging_power_profile.time<charge_end_time), Veh_ID_Num] = row['rate']    
+                                                (df_charging_power_profile.time<charge_end_time), Veh_ID_Num] = row['max_charge_rate'] 
                     
         for index, row in df_sample_current.iterrows():
             
@@ -355,7 +365,8 @@ async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, 
             if SCM_scenario == 'TOU Random':
                 charge_start_time = row['charge_start_time_TOU_random']
 
-            charge_time_minute = int(row['energy_kwh']/row['rate'] * 60)
+            #charge_time_minute = int(row['energy_kwh']/row['rate'] * 60)
+            charge_time_minute = int(row['energy_kwh']/row['max_charge_rate'] * 60)
             charge_end_time = charge_start_time + np.timedelta64(charge_time_minute,'m')
 
             if charge_start_time < np.timedelta64(24,'h'): 
@@ -363,9 +374,11 @@ async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, 
                     charge_end_time = np.timedelta64(24,'h') # only consider the charging periods that are still within the day! 
                     
                 df_charging_power_profile.loc[(df_charging_power_profile.time>=charge_start_time)&\
-                                                (df_charging_power_profile.time<charge_end_time),'power'] += row['rate']
+                                                #(df_charging_power_profile.time<charge_end_time),'power'] += row['rate']
+                                                (df_charging_power_profile.time<charge_end_time),'power'] += row['max_charge_rate']
                 df_charging_power_profile.loc[(df_charging_power_profile.time>=charge_start_time)&\
-                                                (df_charging_power_profile.time<charge_end_time), Veh_ID_Num] = row['rate']
+                                                #(df_charging_power_profile.time<charge_end_time), Veh_ID_Num] = row['rate']
+                                                (df_charging_power_profile.time<charge_end_time), Veh_ID_Num] = row['max_charge_rate']
                     
 
         df_list.append(df_charging_power_profile) # Save daily power profiles into a csv files

@@ -11,12 +11,16 @@ data/mappings/*
 data/premise_data/*
 data/temp/*
 data/temp_sim_plus/*
-examples/*
 !data/temp_sim_plus/.gitkeep
+data/saved_sessions_plus/*
+!data/saved_sessions_plus/.gitkeep
+data/opendss_model/*
+!data/opendss_model/.gitkeep
+ts.ipynb
+saved_session.json
+documentation
+dev
 
 #prevent files in logs dir from uploading to repo
 logs/sim_plus/*
 !logs/sim_plus/.gitkeep
-
-
-inputs/opendss_model/MEAD2104/*

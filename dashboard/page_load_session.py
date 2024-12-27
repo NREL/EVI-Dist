@@ -16,17 +16,23 @@ sys.path.append(parent_directory + "/modules")
 sys.path.append(parent_directory)
 
 class pgLoadSession(param.Parameterized):
-    
+
+    run_selection = param.String()
+    ready = param.Boolean(default=False)
+
     @param.output('file_names','configs')
     def output(self):
+        self.configs['run_selection'] = self.run_selection
         # self.file_names = {'dss_main' : self.filename_texts[0].value}
         return self.file_names, self.configs
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **params):
+        super().__init__(**params)
 
-        self.info_texts = [pn.pane.Markdown("""<b style='font-size:12pt'>Please select the Lite session (*.zip) file:</b>
-                                               <br>This file contains ...</br>""",
+        #self.configs['run_selection'] = self.run_selection
+        #pn.state.notifications.warning(self.run_selection, duration=4000)
+        self.info_texts = [pn.pane.Markdown("""<b style='font-size:12pt'>Please select the previously saved Lite session (*.zip) file:</b>
+                                               <br>This file contains all the files and configurations from a previously run simulation.</br>""",
                                             width=400)
                            ]
         
@@ -80,6 +86,7 @@ class pgLoadSession(param.Parameterized):
                 # self.load_saved_session()
                 self.ready = True    
                 pn.state.notifications.success('Files successfully uploaded!', duration=4000)
+                self.ready = True
                 
             except Exception:
                 pn.state.notifications.error('Files not found! Make sure file paths are correct.', duration=4000)
@@ -107,10 +114,14 @@ class pgLoadSession(param.Parameterized):
             zip_data = f.read() # Read the contents of the file into memory
         
         with zipfile.ZipFile(io.BytesIO(zip_data)) as zf:
-            for file_info in zf.infolist():
+            list_len = len(zf.infolist())
+            for i, file_info in enumerate(zf.infolist()):
+                self.progress_bar.value = int(i/(list_len-1) * 100)
                 if not file_info.is_dir():
+                    
                     filename = file_info.filename
                     file_data = zf.read(filename)
+                    print(filename)
 
                     if filename.endswith(".json"):
                         json_data = json.loads(file_data)
@@ -126,7 +137,10 @@ class pgLoadSession(param.Parameterized):
                             f.write(file_data)
                     elif filename.endswith(".pkl"):
                         # Save pkl files to the target directory
-                        file_path = os.path.join(mappings_directory, filename)
+                        if filename.startswith("total_load_dict"):
+                            file_path = os.path.join(temp_directory, filename)
+                        else:
+                            file_path = os.path.join(mappings_directory, filename)
                         os.makedirs(os.path.dirname(file_path), exist_ok=True)
                         with open(file_path, "wb") as f:
                             f.write(file_data)

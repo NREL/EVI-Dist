@@ -5,29 +5,29 @@ from styles import custom_style
 from actions import gen_xf_mappings
 import os
 import pickle
+from pathinit import EVIDIST_ROOT_PATH
 
 class pgUpload(param.Parameterized):
 
     file_names = param.Dict()
     months = param.List()
-    #next_page = param.String(default='')
-    #ready = param.Boolean(default=False)
     ready = param.Boolean(default=False)
+    run_selection = param.String()
     
-    @param.output('file_names', 'months')
+    @param.output('file_names', 'months', 'run_selection')
     def output(self):
-        # self.file_names = [v.value for v in self.filename_texts]
+        
         self.file_names = {'premise_report' : self.filename_texts[0].value,
                            'ev_adoption' : self.filename_texts[1].value}
-        #self.months = [v.value for v in self.filename_texts]  # This line depends on your actual use case
-        return self.file_names, self.months
+        
+        return self.file_names, self.months, self.run_selection
 
-    def __init__(self):
-        super().__init__()
-
-        # self.custom_style = {
-        #     "font-size": "12pt",
-        # }
+    # def __init__(self):
+    #     super().__init__()
+    def __init__(self, **params):
+        super().__init__(**params)
+        #print(self.run_selection)
+        #pn.state.notifications.warning(self.run_selection, duration=4000)
 
         current_working_directory = os.getcwd()
 
@@ -37,9 +37,6 @@ class pgUpload(param.Parameterized):
                            pn.pane.Markdown("""<b style='font-size:12pt'>Please select EV adoption scenario for the selected feeder(s):</b>
                                                         <br>This file contains columns such as Veh_ID_Num, start_soc, end_soc, energy_kwh, Premise Number, Transformer ID for the feeder(s) of interest.</br>""",
                                             width=400)]
-                        #    pn.pane.Markdown("""<b style='font-size:12pt'>Please select the AMI dataset file (if any) for the selected feeder:</b>
-                        #                             <br>This file contains columns representing  </br>""",
-                        #                     width=400)]
         
         self.file_browse_buttons = [pn.widgets.Button(name='Browse', align=('center','center'), button_type='success', width=100),
                                     pn.widgets.Button(name='Browse', align=('center','center'), button_type='success', width=100)]
@@ -47,8 +44,11 @@ class pgUpload(param.Parameterized):
         self.filename_texts = [pn.widgets.StaticText(value="Selected File: ", align=('center','center')),
                                pn.widgets.StaticText(value="Selected File: ", align=('center','center'))]
         
-        self.file_browse_buttons[0].on_click(lambda event, button_index=0: self.select_files(button_index, event))
-        self.file_browse_buttons[1].on_click(lambda event, button_index=1: self.select_files(button_index, event))
+        self.file_browse_buttons[0].on_click(lambda event, button_index=0: self.select_files(button_index, event, "data/premise_data"))
+        self.file_browse_buttons[1].on_click(lambda event, button_index=1: self.select_files(button_index, event, "data/adoptions"))
+
+        # self.file_browse_buttons[1].on_click(lambda event, button_index=1: self.select_files(button_index, event, "data/premise_data"))
+        # self.file_browse_buttons[2].on_click(lambda event, button_index=2: self.select_files(button_index, event, "data/adoptions"))
 
         self.progress_bar = pn.widgets.Progress(name='Progress', value=0, width=500, align=('center','center'))
         self.variables = dict()
@@ -59,7 +59,6 @@ class pgUpload(param.Parameterized):
             for fn in self.filename_texts:
                 print(fn.value)
                 if fn.value == 'Selected File: ':
-                    print('No pass!')
                     pn.state.notifications.warning('Some input files are not selected!', duration=4000)
                     file_name_check = False
                     break
@@ -71,7 +70,7 @@ class pgUpload(param.Parameterized):
 
                 try:
                     self.variables, self.months[:] = gen_xf_mappings(file_names, self.progress_bar)
-                     
+
                     #print(type(self.months))
                     # We can have another error if the uploaded file are not compatible 
                     # This can be either embedded in the function or using some sort of return value
@@ -109,11 +108,22 @@ class pgUpload(param.Parameterized):
             pn.Row(self.progress_bar, self.progress_start_button)
         )
     
-    def select_files(self, button_index, event):
+    # def select_files(self, button_index, event):
+    #     root = Tk()
+    #     root.withdraw()                                        
+    #     root.call('wm', 'attributes', '.', '-topmost', True)   
+    #     file_name = filedialog.askopenfilename(multiple=False)    
+    #     if file_name == "":
+    #         file_name = "Selected File: "
+    #     self.filename_texts[button_index].value = file_name
+    #     return file_name 
+        
+    def select_files(self, button_index, event, initial_dir: str):
         root = Tk()
         root.withdraw()                                        
-        root.call('wm', 'attributes', '.', '-topmost', True)   
-        file_name = filedialog.askopenfilename(multiple=False)    
+        root.call('wm', 'attributes', '.', '-topmost', True)
+        initial_dir_path = EVIDIST_ROOT_PATH + "/" + initial_dir
+        file_name = filedialog.askopenfilename(multiple=False, initialdir=initial_dir_path)    
         if file_name == "":
             file_name = "Selected File: "
         self.filename_texts[button_index].value = file_name

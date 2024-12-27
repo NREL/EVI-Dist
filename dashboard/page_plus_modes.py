@@ -15,11 +15,11 @@ class pgPlusModes(param.Parameterized):
         btn_loadsession = pn.widgets.Button(name='Load saved simulation files', width=200, height=50, button_type='primary', align=('center','center'))
 
         def on_lite_click(event):
-            self.next_page = 'Plus: upload DSS file'
+            self.next_page = '[Plus] upload sim files'
             self.ready = True
-            
+
         def on_load_session_click(event):
-            self.next_page = 'Plus: load session'
+            self.next_page = '[Plus] load session'
             self.ready = True
 
         btn_lite.on_click(on_lite_click)
@@ -38,5 +38,4 @@ class pgPlusModes(param.Parameterized):
             )
 
 
-        
-        
+

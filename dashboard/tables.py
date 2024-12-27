@@ -22,8 +22,9 @@ class Table:
         filters = {
             'Transformer ID': {'type': 'input', 'func': 'like', 'placeholder': 'Enter XF'},
             'Bank Size': {'type': 'input', 'func': 'like', 'placeholder': 'Enter size'},
-            'OH/UG': {'type': 'input', 'func': 'like', 'placeholder': 'Enter type'},
-            'Bank Configuration': {'type': 'input', 'func': 'like', 'placeholder': 'Enter conf.'},
+            'Num of Prems': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+            'Num of EVs': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+            'Max Overload (%)': {'type': 'input', 'func': '>=', 'placeholder': '>= X%'},
             'Output Voltage': {'type': 'input', 'func': 'like', 'placeholder': 'Enter voltage'}
         }  
 
@@ -36,6 +37,7 @@ class Table:
                                           theme_classes=['thead-dark', 'table-sm'],
                                           header_filters=filters,
                                           height=500,
+                                          text_align='center',
                                           align=('center','center'))
         
     def gen_table(self):
