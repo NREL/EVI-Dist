@@ -1,5 +1,4 @@
-# EVI-DiST - v0.7.1a
-
+# EVI-DiST - v1.0
 import panel as pn
 import io
 import matplotlib.pyplot as plt
@@ -8,6 +7,11 @@ import pandas as pd
 import datetime as dt
 from tkinter import Tk, filedialog
 import param
+import webbrowser
+import os
+from tornado.web import StaticFileHandler
+
+# Import your page modules
 from page_display import pgDisplay
 from page_upload import pgUpload
 from page_execution import pgExecution
@@ -24,96 +28,89 @@ from page_plus_display import pgPlusDisplay
 from page_plus_configs import pgPlusConfig
 from version_info import version_name
 from pathinit import EVIDIST_ROOT_PATH
-#import logging
-import asyncio
 
-pn.extension(template='fast')
-pn.extension('tabulator')
-pn.extension('plotly')
-pn.extension('terminal')
-pn.extension(notifications=True)
-pn.extension('mathjax')
+# Initialize Panel with all required extensions
+pn.extension('plotly', 'tabulator', 'terminal', 'mathjax', notifications=True)
 
-#pn.extension(design="material", sizing_mode="stretch_width")
-# pn.extension('ipywidgets')
+class EVIDistApp:
+    def __init__(self):
+        self.init_pipeline()
+        self.init_info_section()
+        self.init_template()
+        
+    def init_pipeline(self):
+        """Initialize the pipeline"""
+        self.pl = pn.pipeline.Pipeline(inherit_params=False)
+        
+        # Add pipeline stages
+        self.pl.add_stage('Mode selection', pgModes, ready_parameter='ready', auto_advance=True, next_parameter='next_page')
+        
+        # Lite version stages
+        self.pl.add_stage('Choose Lite mode', pgLiteModes, ready_parameter='ready', auto_advance=True, next_parameter='next_page')
+        self.pl.add_stage('Load session', pgLoadSession, ready_parameter='ready', auto_advance=False)
+        self.pl.add_stage('Uploading input files', pgUpload, ready_parameter='ready', auto_advance=False)
+        self.pl.add_stage('Configurations', pgConfig, ready_parameter='ready', next_parameter='next_page')
+        self.pl.add_stage('Execution', pgExecution, ready_parameter='ready', auto_advance=False)
+        self.pl.add_stage('Displaying results', pgDisplay)
+        
+        # Plus version stages
+        self.pl.add_stage('[Plus] choose mode', pgPlusModes, ready_parameter='ready', auto_advance=True, next_parameter='next_page')
+        self.pl.add_stage('[Plus] upload sim files', pgPlusDSSUpload, ready_parameter='ready', auto_advance=False)
+        self.pl.add_stage('[Plus] configurations', pgPlusConfig, ready_parameter='ready', auto_advance=False)
+        self.pl.add_stage('[Plus] load session', pgPlusLoadSession, ready_parameter='ready', auto_advance=False)
+        self.pl.add_stage('[Plus] run simulation', pgPlusRunSim, ready_parameter='ready', auto_advance=False)
+        self.pl.add_stage('[Plus] display results', pgPlusDisplay, ready_parameter='ready', auto_advance=False)
+        
+        # Define pipeline graph
+        self.pl.define_graph({
+            'Mode selection': ('Choose Lite mode','[Plus] choose mode'),
+            'Choose Lite mode': ('Uploading input files', 'Load session'),
+            'Uploading input files': 'Configurations',
+            'Configurations': 'Execution',
+            'Execution': 'Displaying results',
+            'Load session': 'Displaying results',
+            '[Plus] choose mode': ('[Plus] upload sim files', '[Plus] load session'),
+            '[Plus] load session': '[Plus] display results',
+            '[Plus] upload sim files': '[Plus] configurations',
+            '[Plus] configurations': '[Plus] run simulation',
+            '[Plus] run simulation': '[Plus] display results',
+        })
+        
+        pn.state.pipeline = self.pl
 
-pn.state.template.param.update(header_background="black")
-pn.state.template.param.update(title=f"EVI-DiST - v{version_name}")
-pl = pn.pipeline.Pipeline(inherit_params=False)
+    def init_info_section(self):
+        """Initialize the info section"""
+        docs_file = 'http://localhost:5007/docs/'
+        
+        def show_info(event):
+            webbrowser.open(docs_file)
+        
+        info_text = pn.widgets.StaticText(
+            value="This panel was designed to help you easily interact with EVI-Dist. For more information about how to use EVI-Dist and perform specific actions, please refer to:",
+            align=('center','center'),
+            width=600
+        )
+        
+        info_button = pn.widgets.Button(
+            name='DOCUMENTATION PAGE',
+            button_type='primary',
+            align=('center','center')
+        )
+        info_button.on_click(show_info)
+        
+        self.info_section = pn.Row(info_text, info_button, width=900)
 
-info = False
-markdown_file_path = "dashboard/page_info.md"
-docs_file = EVIDIST_ROOT_PATH + '/docs/index.html'
-import webbrowser
+    def init_template(self):
+        """Initialize the template"""
+        self.template = pn.template.FastListTemplate(
+            title=f"EVI-DiST - v{version_name}",
+            main=[self.info_section, self.pl],
+            header_background="black",
+        )
 
-def show_info(event):
-    webbrowser.open('https://pages.github.com/NREL/EVI-Dist/')  # Replace with your desired URL
-    # global info
-    # global pl
-    # with open(markdown_file_path, 'r') as file:
-    #     markdown_content = file.read()
+    def get_template(self):
+        """Return the template for serving"""
+        return self.template
 
-    # info_page = pn.pane.Markdown(markdown_content)
-    # #info_page = gen_info()
-
-    # if info:
-    #     app[0] = pn.Column(pl)
-    # else:
-    #     #app[0] = pn.Column(info_page)
-    #     app[0] = pn.Column(info_page)
-
-    # info = not info
-
-info_text = pn.widgets.StaticText(value="This panel was designed to help you easily interact with EVI-Dist. For more information about how to use EVI-Dist and perform specific actions, please refer to:",
-                                  align=('center','center'), width=600)
-
-info_button = pn.widgets.Button(name='DOCUMENTATION PAGE', button_type='primary', align=('center','center'))
-info_button.on_click(show_info)
-
-pn.Row(info_text, info_button, width=900).servable()
-
-
-pl.add_stage('Mode selection', pgModes, ready_parameter='ready', auto_advance=True, next_parameter='next_page')
-
-#Lite version stages
-pl.add_stage('Choose Lite mode', pgLiteModes, ready_parameter='ready', auto_advance=True, next_parameter='next_page')
-pl.add_stage('Load session', pgLoadSession, ready_parameter='ready', auto_advance=False)
-pl.add_stage('Uploading input files', pgUpload, ready_parameter='ready', auto_advance=False)
-pl.add_stage('Configurations', pgConfig, ready_parameter='ready', next_parameter='next_page')
-pl.add_stage('Execution', pgExecution, ready_parameter='ready', auto_advance=False)
-pl.add_stage('Displaying results', pgDisplay)
-
-#Plus version stages
-pl.add_stage('[Plus] choose mode', pgPlusModes, ready_parameter='ready', auto_advance=True, next_parameter='next_page')
-pl.add_stage('[Plus] upload sim files', pgPlusDSSUpload, ready_parameter='ready', auto_advance=False)
-pl.add_stage('[Plus] configurations', pgPlusConfig, ready_parameter='ready', auto_advance=False)
-pl.add_stage('[Plus] load session', pgPlusLoadSession, ready_parameter='ready', auto_advance=False)
-pl.add_stage('[Plus] run simulation', pgPlusRunSim, ready_parameter='ready', auto_advance=False)
-pl.add_stage('[Plus] display results', pgPlusDisplay, ready_parameter='ready', auto_advance=False)
-
-
-pl.define_graph({'Mode selection': ('Choose Lite mode','[Plus] choose mode'),
-                 'Choose Lite mode': ('Uploading input files', 'Load session'),
-                 'Uploading input files': 'Configurations',
-                 'Configurations': 'Execution',
-                 'Execution': 'Displaying results',
-                 'Load session': 'Displaying results',
-                 '[Plus] choose mode': ('[Plus] upload sim files', '[Plus] load session'),
-                 '[Plus] load session': '[Plus] display results',
-                 '[Plus] upload sim files': '[Plus] configurations',
-                 '[Plus] configurations': '[Plus] run simulation',
-                 '[Plus] run simulation': '[Plus] display results',
-                 })
-
-pn.state.pipeline = pl
-
-app = pn.Column(pl)
-# app = pn.Column(
-#     pl.title,
-#     pl.network,
-#     pl.stage,
-#     pl.prev_button,
-#     pl.next_button
-#     )
-
-app.servable()
+app = EVIDistApp()
+app.get_template().servable()

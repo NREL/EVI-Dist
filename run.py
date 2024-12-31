@@ -9,7 +9,7 @@ def run_command(command):
 
 if __name__ == "__main__":
     # Specify the command to run
-    command_to_run = "panel serve dashboard/app.py --show --autoreload"
+    command_to_run = "panel serve dashboard/app.py --port 5007 --show --autoreload --static-dirs /docs=docs"
 
     # Call the function to run the command
     run_command(command_to_run)
