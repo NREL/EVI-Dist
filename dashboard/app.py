@@ -28,7 +28,6 @@ from page_plus_display import pgPlusDisplay
 from page_plus_configs import pgPlusConfig
 from version_info import version_name
 from pathinit import EVIDIST_ROOT_PATH
-
 # Initialize Panel with all required extensions
 pn.extension('plotly', 'tabulator', 'terminal', 'mathjax', notifications=True)
 
@@ -37,7 +36,7 @@ class EVIDistApp:
         self.init_pipeline()
         self.init_info_section()
         self.init_template()
-        
+       
     def init_pipeline(self):
         """Initialize the pipeline"""
         self.pl = pn.pipeline.Pipeline(inherit_params=False)
@@ -80,7 +79,7 @@ class EVIDistApp:
 
     def init_info_section(self):
         """Initialize the info section"""
-        docs_file = 'http://localhost:5007/docs/'
+        docs_file = 'http://localhost:5007/docs/index.html'
         
         def show_info(event):
             webbrowser.open(docs_file)
@@ -111,6 +110,7 @@ class EVIDistApp:
     def get_template(self):
         """Return the template for serving"""
         return self.template
-
+       
 app = EVIDistApp()
-app.get_template().servable()
+template = app.get_template()
+template.servable()
