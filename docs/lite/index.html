@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>EVI-DiST Lite - EVI-DiST Documentation (v1.0.0)</title>
+        <title>EVI-DiST Lite - EVI-DiST Documentation (v1.0.1)</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/fontawesome.min.css" rel="stylesheet">
         <link href="../css/brands.min.css" rel="stylesheet">
@@ -26,7 +26,7 @@
     <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="../index.html">EVI-DiST Documentation (v1.0.0)</a>
+                <a class="navbar-brand" href="../index.html">EVI-DiST Documentation (v1.0.1)</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -196,26 +196,39 @@
 <img alt="alt text" src="../img/file_selection_successful.png" /></p>
 <h2 id="4-simulation-configurations">4. Simulation Configurations</h2>
 <p>The <strong>Configurations</strong> page allows for setting important simulation parameters. The feeders extracted from the premise report are listed in the drop down list and can be selected to perform simulations. Once the feeder is selected, its details are displayed in the middle column under <strong>Selected feeder</strong> section. </p>
-<p><strong>EVI-DiST</strong> offers several controller options: <code>Uncontrolled</code>, <code>TOU ASAP</code>, <code>TOU ALAP</code>, <code>TOU Random</code>, <code>FCFC</code>, <code>FCFC + SM50</code>, and <code>Equal Shares</code>. More than one controller options can be selected by holding <code>Ctrl</code> key to run simulations. Description of each controller option is shown in the far-right column under <strong>EV controller</strong> section. </p>
+<p><strong>EVI-DiST</strong> offers several controller options: </p>
+<ul>
+<li>
+<p>No smart charging control: <code>Uncontrolled</code></p>
+</li>
+<li>
+<p>TOU-based controllers: <code>TOU ASAP</code>, <code>TOU ALAP</code>, and <code>TOU Random</code></p>
+</li>
+<li>
+<p>Grid-aware controllers: <code>FCFS</code>, <code>FCFS + SM</code>, and <code>Equal Sharing</code></p>
+</li>
+</ul>
+<p>(<strong>TOU</strong>: Time of use, <strong>FCFS</strong>: First come first served, <strong>SM</strong>: Supply minimum)</p>
+<p>More than one controller options can be selected by holding <code>Ctrl</code> key to run simulations. Description of each controller option is shown in the far-right column under <strong>EV controller</strong> section. </p>
 <p>The simulation month and display resolution can also be selected from the drop-down lists. Note that the performance of displaying the results may be affected by the chosen resolution.
-<img alt="alt text" src="../img/config_main_2.png" />
-The AMI data file(s) are required to generate the simulation’s baseload, and certain controllers may require additional AMI data files. The <code>Uncontrolled</code>, <code>TOU ASAP</code>, <code>TOU ALAP</code>, and <code>TOU Random</code> controllers need only the <strong>Transformer S (kVA) AMI file</strong>, which contains the apparent power data at the <ins>transformer level</ins>. Please select an AMI file with columns representing transformer ID numbers. Note that the uploaded AMI data file should match the selected feeder. An example of an AMI file is shown below.
+<img alt="alt text" src="../img/config_main_4.png" />
+ <ins>Transformer level</ins> active (P-kW) and reactive (Q-kWAr) power AMI data files are required to generate the simulation’s baseload. Please select AMI files with columns representing transformer ID numbers. Note that the uploaded AMI data file should match the selected feeder. An example of an AMI file is shown below.
 <img alt="alt text" src="../img/ami_file.png" /></p>
 <blockquote>
 <p><strong>EVI-DiST</strong> also offers an optional coincidance analysis if <ins>customer level</ins> AMI data is available. This analysis is not required to run simulations, but can be performed alongside the base simulation if a <ins>customer level</ins> AMI file is uploaded using the <span style="color:red">red button</span> labeled <strong>Select customer S (kVA) file (for optional coincidance analysis)</strong>. You need to upload a <strong>.pkl</strong> file that contains the customer level AMI profiles (either S or P) for the selected feeder and month. (Make sure you always select the <strong>Uncontrolled</strong> controller option to run the coincidence analysis.)</p>
 </blockquote>
-<p>The controllers <code>FCFC</code>, <code>FCFC + SM</code>, and <code>Equal Shares</code> need additional active (P) and reactive (Q) <ins>transformer level</ins> AMI data files. When one of these controllers is selected, new buttons will appear to upload these AMI files. The format of these files is the same as the transformer level apparent power (S) AMI data file shown above. The target time zone of the AMI data can also be selected from the drop down list. It is set to <code>UTC</code> by default, and no time zone conversion is performed if it is left as <code>UTC</code>. Finally, a custom name can be given to the adoption scenario to help identify and distinguish it from other scenarios. After configuring the settings, you can click <code>Next</code> to proceed to the next page.
-<img alt="alt text" src="../img/config_more_with_files_2.png" /></p>
+<p>EVI-DiST Lite assumes the AMI data is provided in the UTC time zone. If the feeder to be simulated is located in a different time zone, the AMI data timestamps should be converted to the target time zone to ensure accurate alignment of EV charging events with the baseload. The desired time zone can be selected from a drop-down list. If the AMI data is already in the feeder's time zone, no conversion is necessary, and the time zone option can remain set to "UTC".</p>
+<p>Finally, a custom name can be given to the adoption scenario to help identify and distinguish it from other scenarios. After configuring the settings, you can click <code>Next</code> to proceed to the next page.</p>
 <h2 id="5-running-simulations">5. Running Simulations</h2>
 <p>The <strong>Execution</strong> page is where you can see the selected simulation configurations, start running the simulation, and monitor the execution progress. Once the simulations are completed, you can proceed to the <strong>Display results</strong> page. 
-<img alt="alt text" src="../img/execution_2.png" /></p>
+<img alt="alt text" src="../img/execution_3.png" /></p>
 <h2 id="6-displaying-results">6. Displaying Results</h2>
 <p>The <strong>Display Results</strong> page is the final step in EVI-DiST, allowing you to view and interact with the simulation outcomes. The table on the left lists the transformer IDs in the selected feeder, along with key details such as the number of premises and EVs associated with each transformer, as well as the maximum overload percentage across the chosen controller options. You can click any transformer ID from the table and its associated profiles are shown on the right. You can save the simulation results by clicking the <strong>Save Sim Lite Data</strong> button in the lower-left corner. The results will be compressed into a zip file and downloaded shortly.
-<img alt="alt text" src="../img/lite_display_main.png" />
+<img alt="alt text" src="../img/lite_display_main_2.png" />
 By default, the time series plots display the <strong>Baseload</strong>, <strong>EV Load</strong>, and <strong>Baseload + EV</strong> profiles, along with individual EV profiles associated with the selected transformer and controller option. To view results for a different controller, simply select it from the dropdown menu. Additionally, you can toggle individual traces on or off by clicking their names in the legend.
-<img alt="alt text" src="../img/lite_time_series.png" /></p>
+<img alt="alt text" src="../img/lite_time_series-2.png" /></p>
 <p>Alternatively, you can see the results of different controllers together for the selected transformer under the <strong>Comparison</strong> tag for comparison.</p>
-<p><img alt="alt text" src="../img/lite_comparison.png" /></p>
+<p><img alt="alt text" src="../img/lite_comparison-2.png" /></p>
 <p>The <strong>Histogram</strong> tag shows the power distribution of the <strong>Baseload</strong>, <strong>EV Load</strong>, and <strong>Baseload + EV</strong> profiles for the selected controller.
 <img alt="alt text" src="../img/lite_histogram.png" /></p>
 <p>The <strong>Stats</strong> tab provides key statistics and quantitative insights on the transformer's loading for the selected controller, compared to the baseline case. The <strong>Threshold (kVA)</strong> slider represents the transformer's rated power and allows you to explore how its loading would vary with different rating values.</p>

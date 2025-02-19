@@ -264,7 +264,7 @@ def calculate_charge_start_time_TOU_random(start_time, end_time):
     # Return the timestamp in the desired format
     return random_time.time().strftime('%H:%M:%S')
 
-async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, progress, progress_queue):
+async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, feeder, mappings, baseload_P, baseload_Q, progress, progress_queue):
     # Create a list to save the daily EV charging profiles
     #df_feeder_month['max_charge_rate'] = df_feeder_month.apply(lambda row: min(row['rate'], row['Max AC Power kW']), axis=1)
     df_list = [] 
@@ -365,7 +365,6 @@ async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, 
             if SCM_scenario == 'TOU Random':
                 charge_start_time = row['charge_start_time_TOU_random']
 
-            #charge_time_minute = int(row['energy_kwh']/row['rate'] * 60)
             charge_time_minute = int(row['energy_kwh']/row['max_charge_rate'] * 60)
             charge_end_time = charge_start_time + np.timedelta64(charge_time_minute,'m')
 
@@ -390,9 +389,22 @@ async def Weekly_EV_Charging_Profiles_Generation(df_feeder_month, SCM_scenario, 
 
     # Downsample the final ev profile at display res
     combined_weekly_profile_df = combined_weekly_profile_df.iloc[:-1:1]
+    total_apparent_power_df = pd.DataFrame(columns=['time'] + list(mappings['xf_mappings'][feeder].keys()))
+    row_size = len(baseload_Q)
+    for xf in mappings['xf_mappings'][feeder]:
+        if str(xf) in baseload_Q:
+            total_ev_load = np.zeros(row_size)
+            for ev in mappings['xf_mappings'][feeder][xf]['vehicles']:
+                if ev in combined_weekly_profile_df:
+                    total_ev_load[:-1] += combined_weekly_profile_df[ev].fillna(0).values
+            total_active_load = baseload_P[str(xf)] + total_ev_load
+            total_apparent_power_df[xf] = np.sqrt(np.square(total_active_load) + np.square(baseload_Q[str(xf)]))
+        else:
+            continue
+
 
     combined_weekly_profile_df.to_csv(file_name)
     print('EV charging profiles generated and saved to local CSV file successfully!')
 
-    return combined_weekly_profile_df
+    return total_apparent_power_df
 

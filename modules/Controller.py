@@ -88,7 +88,8 @@ class Controller:
                 self.publications.append(h.helicsFederateRegisterPublication(self.fed, 'control_setpoints', h.HelicsDataType.STRING)) # this is published as a json string of a dictionary
                 self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, f'{self.sim_name}/voltages', ""))
                 self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, f'{self.sim_name}/currents', ""))
-                self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, f'{self.sim_name}/trns_kva', ""))
+                self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, f'{self.sim_name}/trns_kW', ""))
+                self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, f'{self.sim_name}/trns_kvar', ""))
                 self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, f'{self.sim_name}/trns_rating', ""))
             else:
                 self.fed = h.helicsCreateValueFederateFromConfig(self.helics_config_path)
@@ -155,11 +156,11 @@ class Controller:
             for evse_id in charge_events_input['Veh_ID_Num'].unique():
                 self.control_setpoints[str(evse_id)] = 0
 
-        elif self.controller_name in ['FCFS', 'FCFS + SM50', 'EQUAL SHARES']:
+        elif self.controller_name in ['FCFS', 'FCFS + SM50', 'EQUAL SHARING']:
             #in the setup, create the EV and ChargingManagementSystem objects.
             #Save the plug in times for each vehicle. Along with associated xfmr number, premise number, energy need, etc.
 
-            trnsfmr_ratings: dict = json.loads(h.helicsInputGetString(self.subscriptions[3]))
+            trnsfmr_ratings: dict = json.loads(h.helicsInputGetString(self.subscriptions[4]))
 
             for trns_id in trnsfmr_ratings.keys():
                 if trns_id in self.trns_premise_ev_mapping:
@@ -211,7 +212,8 @@ class Controller:
         cosim_datetime = self.start_datetime.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(hours=cosim_hours,minutes=cosim_minutes, seconds=cosim_seconds)
 
         # first get the updated grid status
-        kva: dict[str,list] = json.loads(h.helicsInputGetString(self.subscriptions[2]))
+        kW: dict[str,float] = json.loads(h.helicsInputGetString(self.subscriptions[2]))
+        kvar: dict[str,float] = json.loads(h.helicsInputGetString(self.subscriptions[3]))
 
         ##### insert opt here #####
         if self.controller_name== 'DEFAULT_CONTROLLER':
@@ -237,12 +239,13 @@ class Controller:
             ev_control_setpoints = self.control_setpoints
             # print(f'total power ev_control_setpoints {sum(ev_control_setpoints.values())} at time {cosim_datetime}')
 
-        elif self.controller_name in ['FCFS', 'FCFS + SM50', 'EQUAL SHARES']:
+        elif self.controller_name in ['FCFS', 'FCFS + SM50', 'EQUAL SHARING']:
             for k in self.control_setpoints:
                 self.control_setpoints[k] = 0 #reset setpoints to zero before setting new values
             time_step = timedelta(seconds=self.timestep_sec)
             for trns_id, scm in self.trns_scm.items():
-                scm.previous_time_step_total_load = kva[trns_id]
+                scm.previous_time_step_base_load_kW = kW[trns_id]
+                scm.previous_time_step_base_load_kvar = kvar[trns_id]
                 ev_allocated_powers = scm.simulate_step(time_step=time_step)
                 for ev, power in ev_allocated_powers.items():
                     self.control_setpoints[ev] = power #if not ev in self.control_setpoints.keys() else (self.control_setpoints[ev] + power)
@@ -266,7 +269,7 @@ class Controller:
 
     def export_ev_stats(self):
         ev_stats_df = pd.DataFrame(columns=["ev_id","park_start_timestamp","park_end_timestamp","target_energy_reached","energy_need","energy_charged","energy_capacity"])
-        if self.controller_name in ['FCFS', 'FCFS + SM50', 'EQUAL SHARES']:
+        if self.controller_name in ['FCFS', 'FCFS + SM50', 'EQUAL SHARING']:
             for ev in self.scm_evs:
                 ev_stats_df = pd.concat([ev_stats_df, pd.DataFrame({"ev_id": [ev.ev_id],"park_start_timestamp": [ev.plug_in_time],"park_end_timestamp": [ev.plug_in_time + timedelta(minutes=ev.duration)], "park_end_after_sim_end": [(ev.plug_in_time + timedelta(minutes=ev.duration)) > self.end_datetime],"target_energy_reached": [ev.energy_charged >= ev.energy_need],"energy_need": [ev.energy_need],"energy_charged": [ev.energy_charged],"energy_capacity": [ev.energy_capacity]})], ignore_index=True)
         else:

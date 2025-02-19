@@ -18,7 +18,7 @@ class pgExecution(param.Parameterized):
 
     file_names = param.Dict()
     configs = param.Dict()
-    ready = param.Boolean(default=False)
+    ready = param.Boolean(default=True)
 
     @param.output('file_names', 'configs')
     def output(self):
@@ -29,12 +29,14 @@ class pgExecution(param.Parameterized):
         self.progress_bar = pn.widgets.Progress(name='Progress', value=0, width=300, align=('center','center'))
         self.simulation_description = pn.pane.Markdown(f"""
                     ## Simulation config summary
-                    - <b>Selected feeder: </b>{self.configs['feeder']}
-                    - <b>Selected controller(s): </b>{self.configs['controller']}
-                    - <b>Selected month: </b>{self.configs['month']}
-                    - <b>Timezone: </b>{self.configs['timezone'] if self.configs['timezone'] != 'UTC' else 'UTC or default timezone'}
-                    - <b>EV Adoption: </b>{self.configs['adoption']}
-                    - <b>AMI data: </b>{self.configs['ami_data_file']}""", height=150)
+                    - **Selected feeder:** {self.configs['feeder']}
+                    - **Selected controller(s):** {self.configs['controller']}
+                    - **Selected month:** {self.configs['month']}
+                    - **Timezone:** {self.configs['timezone'] if self.configs['timezone'] != 'UTC' else 'UTC or default timezone'}
+                    - **EV Adoption:** {self.configs['adoption']}
+                    - **AMI data (P):** {self.configs['ami_data_file_P']}
+                    - **AMI data (Q):** {self.configs['ami_data_file_Q']} <br><br>
+                    """, height=150)
         self.info_text = [pn.pane.Markdown("Execution progress", styles=custom_style, align=('center','center')), 
                           pn.pane.Markdown("0%", width=50, styles=custom_style, align=('center','center'))]
         self.pb = tqdm(total=100)
@@ -46,11 +48,11 @@ class pgExecution(param.Parameterized):
                 "background": '#222426',
                 "foreground": '#FFD700'
             },
-            "fontSize": 10,
+            "fontSize": 14,
             "fontFamily": 'Fira Code, Menlo, Monaco, "Courier New", monospace',
             "cursorBlink": True
         },
-        height=300, sizing_mode='stretch_width')
+        height=280, sizing_mode='stretch_width')
         sys.stdout = self.terminal 
     
     def panel(self):
@@ -84,8 +86,7 @@ class pgExecution(param.Parameterized):
         progress_start.on_click(run_async)
 
         return pn.Row(pn.Column(self.simulation_description, 
-                                # pn.Row(pn.Spacer(width=20), margin=(0, 0, 0, 0)),
-                                # pn.Row(pn.Spacer(width=20), margin=(0, 0, 0, 0)),
-                                pn.Row(pn.Spacer(width=20), progress_start, self.progress_bar, self.info_text[1], align='center', margin=(10, 5, 5, 5))),
-                      self.terminal)
-                        
+                                pn.Spacer(height=80),
+                                pn.Row(progress_start, self.progress_bar, self.info_text[1], align='center'), width=800),
+                      self.terminal,
+        )

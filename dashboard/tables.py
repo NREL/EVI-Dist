@@ -21,7 +21,7 @@ class Table:
         # This filter can be automatically generated.
         filters = {
             'Transformer ID': {'type': 'input', 'func': 'like', 'placeholder': 'Enter XF'},
-            'Bank Size': {'type': 'input', 'func': 'like', 'placeholder': 'Enter size'},
+            'Bank Size (kVA)': {'type': 'input', 'func': 'like', 'placeholder': 'Enter size'},
             'Num of Prems': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
             'Num of EVs': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
             'Max Overload (%)': {'type': 'input', 'func': '>=', 'placeholder': '>= X%'},

@@ -35,6 +35,8 @@ class GridSim:
         self.time = sim_start_time # what timestep the last outputs were for in seconds
         self.loads_updated_time = 0 # what timestep are the updated loads in alignment with
         self.opendss_dir = opendss_path # directory with opendss model
+        self.trns_load_map: dict[str,list[str]] = {}
+        self.load_to_trns_mapping(opendss_path)
         self.charge_event_df = pd.read_csv(EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/sim_plus_charge_event_data.csv')
         with open(EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/sim_plus_trns_premise_ev_mapping.pkl', 'rb') as file:
             self.trns_premise_ev_mapping: dict[str,dict[str,list[str]]] = pickle.load(file)
@@ -79,7 +81,8 @@ class GridSim:
                 self.fed = h.helicsCreateValueFederate(self.name, fedinfo)
                 self.publications.append(h.helicsFederateRegisterPublication(self.fed, 'voltages', h.HelicsDataType.STRING))
                 self.publications.append(h.helicsFederateRegisterPublication(self.fed, 'currents', h.HelicsDataType.STRING))
-                self.publications.append(h.helicsFederateRegisterPublication(self.fed, 'trns_kva', h.HelicsDataType.STRING))
+                self.publications.append(h.helicsFederateRegisterPublication(self.fed, 'trns_kW', h.HelicsDataType.STRING))
+                self.publications.append(h.helicsFederateRegisterPublication(self.fed, 'trns_kvar', h.HelicsDataType.STRING))
                 self.publications.append(h.helicsFederateRegisterPublication(self.fed, 'trns_rating', h.HelicsDataType.STRING))
                 self.subscriptions.append(h.helicsFederateRegisterSubscription(self.fed, 'ev_charge_sim/ev_loads', "")) # this is a json string
             else:
@@ -187,6 +190,8 @@ class GridSim:
         trns_kva = dict()
         trns_currents = dict()
         trns_rating = dict() # kva rating
+        trns_load_kW = {}
+        trns_load_kvar = {}
         for trns in self.trns_names:
             dss.Circuit.SetActiveElement("Transformer."+trns)
             kva = dss.CktElement.Powers()
@@ -203,6 +208,15 @@ class GridSim:
             dss.Transformers.Name(trns)
             trns_rating[trns]= dss.Transformers.kVA()
 
+            #add up the non-EV loads supplied by this transformer
+            trns_load_kW[trns] = 0
+            trns_load_kvar[trns] = 0
+            if trns in self.trns_load_map:
+                for load_name in self.trns_load_map[trns]:
+                    dss.Loads.Name(load_name)
+                    trns_load_kW[trns] += round(dss.Loads.kW(),2)
+                    trns_load_kvar[trns] += round(dss.Loads.kvar(),2)
+
         # to get line currents you need to iterate through circuit elements
         line_phase_currents = {}
         for line in self.line_names:
@@ -213,8 +227,15 @@ class GridSim:
             for i in range(phases):
                 line_phase_currents[line + f".{i+1}"] = math.sqrt(current[i*2]**2 + current[i*2 + 1]**2)
 
+
+        #reduce the floating point precision to speed up helics communication
+        voltages = [round(v,3) for v in voltages]
+        trns_kva = {k:round(v,3) for k,v in trns_kva.items()}
+        trns_rating = {k:round(v,3) for k,v in trns_rating.items()}
+        trns_currents = {k:round(v,3) for k,v in trns_currents.items()}
+
         if self.co_simulation:
-            h.helicsPublicationPublishString(self.publications[3], json.dumps(trns_rating))
+            h.helicsPublicationPublishString(self.publications[4], json.dumps(trns_rating))
 
             h.helicsPublicationPublishString(self.publications[0], json.dumps(voltages))
             voltage_output_file = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/sim_plus_voltages.csv'
@@ -240,7 +261,9 @@ class GridSim:
                     writer.writerow(['timestamp'] + self.trns_names)
                 writer.writerow([dss_time] + list(trns_currents.values()))
 
-            h.helicsPublicationPublishString(self.publications[2], json.dumps(trns_kva))
+            h.helicsPublicationPublishString(self.publications[2], json.dumps(trns_load_kW))
+            h.helicsPublicationPublishString(self.publications[3], json.dumps(trns_load_kvar))
+
             trnskva_file = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/sim_plus_trnskva.csv'
             write_header = False
             if not os.path.isfile(trnskva_file):
@@ -265,7 +288,7 @@ class GridSim:
             for evid in self.evse_to_load_point_dict:
                 dss.Circuit.SetActiveElement("Load."+evid)
                 ev_load = dss.CktElement.Powers()
-                ev_loads[evid] = (math.sqrt( (ev_load[0]+ev_load[2])**2 + (ev_load[1]+ev_load[3])**2))
+                ev_loads[evid] = round(math.sqrt( (ev_load[0]+ev_load[2])**2 + (ev_load[1]+ev_load[3])**2),3)
             evload_file = EVIDIST_ROOT_PATH + f'/data/temp_sim_plus/sim_plus_evloads.csv'
             if len(self.evse_to_load_point_dict.keys()) > 0:
                 write_header = False
@@ -424,6 +447,17 @@ class GridSim:
         # asdf.to_csv(EVIDIST_ROOT_PATH + "/data/temp_sim_plus/unmapped_ev_list_with_premise_and_centroid.csv", sep=',', index=False)
         return evse_to_load_df
 
+    def load_to_trns_mapping(self, main_dss_file):
+        # get all the loads from the dss file
+        dss.Basic.ClearAll()
+        dss.Command(f'Redirect {main_dss_file}')
+        all_load_names = dss.Loads.AllNames()
+
+        for load_name in all_load_names:
+            trns_id = str(load_name).rsplit("_", maxsplit=1)[-1]
+            if trns_id not in self.trns_load_map:
+                self.trns_load_map[trns_id] = []
+            self.trns_load_map[trns_id].append(load_name)
 
 if __name__ == "__main__":
     #TODO: make labeled inputs instead of positional

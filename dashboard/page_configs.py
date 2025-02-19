@@ -93,7 +93,8 @@ class pgConfig(param.Parameterized):
         self.select_feeder = pn.widgets.Select(name='Select feeder', options=feeders)
         self.select_adoption = pn.widgets.Select(name='Select adoption scenario', options=self.adoption_scenarios)
         self.select_control = pn.widgets.Select(name='Select EV control', options=self.controllers)
-        self.multi_controller_select = pn.widgets.MultiSelect(name='Select controller(s)', value=['Uncontrolled', 'TOU ASAP'], options=['Uncontrolled', 'TOU ASAP', 'TOU ALAP', 'TOU Random', 'FCFS', 'FCFS + SM', 'Equal Shares'], size=7)
+        #self.multi_controller_select = pn.widgets.MultiSelect(name='Select controller(s)', value=['Uncontrolled', 'TOU ASAP'], options=['Uncontrolled', 'TOU ASAP', 'TOU ALAP', 'TOU Random', 'FCFS', 'FCFS + SM', 'Equal Shares'], size=7)
+        self.multi_controller_select = pn.widgets.MultiSelect(name='Select controller(s)', value=self.controllers[0:2], options=self.controllers, size=7)
         self.select_profile_gen = pn.widgets.Select(name='Select load profile generation', options=self.load_profiles)
         self.select_month = pn.widgets.Select(name='Select the month of simulation', options=self.months)
         self.select_display_res = pn.widgets.Select(name='Select result display resolution (minute)', options=self.display_res)
@@ -194,21 +195,23 @@ class pgConfig(param.Parameterized):
         <span style="font-size:12pt; font-weight: bold;">Description: </span></span><span style="font-size:11pt;">{des}</span>  
         """
 
-        if ('FCFS' in self.multi_controller_select.value) or ('FCFS + SM' in self.multi_controller_select.value) or ('Equal Shares' in self.multi_controller_select.value):
-            filename_display = f"""
-            <span style="font-size:10pt; font-weight: bold;">Transformer S (kVA) file: </span></span><span style="font-size:10pt;">{self.selected_file_xf_level.object}</span> <br>
-            <span style="font-size:10pt; font-weight: bold;">Transformer P (kW) file: </span></span><span style="font-size:10pt;">{self.selected_file_xf_level_P.object}</span> <br>
-            <span style="font-size:10pt; font-weight: bold;">Transformer Q (kVAr) file: </span></span><span style="font-size:10pt;">{self.selected_file_xf_level_Q.object}</span> <br>
-            <span style="font-size:10pt; font-weight: bold;">Customer S (kVA) file: </span></span><span style="font-size:10pt;">{self.selected_file_cust_level.object}</span>  
-            """
-            return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.select_timezone, self.btn_select_file, self.btn_select_file_P, self.btn_select_file_Q, self.btn_select_file_cust_level, pn.pane.Markdown(filename_display, width=500, renderer='markdown'))
-        else:
-            filename_display = f"""
-            <span style="font-size:10pt; font-weight: bold;">Transformer S (kVA) file: </span></span><span style="font-size:10pt;">{self.selected_file_xf_level.object}</span> <br>
-            <span style="font-size:10pt; font-weight: bold;">Customer S (kVA) file: </span></span><span style="font-size:10pt;">{self.selected_file_cust_level.object}</span>  
-            """
-            #return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.btn_select_file, self.btn_select_file_cust_level, self.selected_file_xf_level, self.selected_file_cust_level)
-            return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.select_timezone, self.btn_select_file, self.btn_select_file_cust_level, pn.pane.Markdown(filename_display, width=500, renderer='markdown'))
+        #if any(controller in self.multi_controller_select.value for controller in ['FCFS', 'FCFS + SM', 'Equal Sharing']):
+        
+        
+        #<span style="font-size:10pt; font-weight: bold;">Transformer S (kVA) file: </span></span><span style="font-size:10pt;">{self.selected_file_xf_level.object}</span> <br>
+        filename_display = f"""<span style="font-size:10pt; font-weight: bold;">Transformer P (kW) file: </span></span><span style="font-size:10pt;">{self.selected_file_xf_level_P.object}</span> <br>
+        <span style="font-size:10pt; font-weight: bold;">Transformer Q (kVAr) file: </span></span><span style="font-size:10pt;">{self.selected_file_xf_level_Q.object}</span> <br>
+        <span style="font-size:10pt; font-weight: bold;">Customer S (kVA) file: </span></span><span style="font-size:10pt;">{self.selected_file_cust_level.object}</span>  
+        """
+        #return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.select_timezone, self.btn_select_file, self.btn_select_file_P, self.btn_select_file_Q, self.btn_select_file_cust_level, pn.pane.Markdown(filename_display, width=500, renderer='markdown'))
+        return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.select_timezone, self.btn_select_file_P, self.btn_select_file_Q, self.btn_select_file_cust_level, pn.pane.Markdown(filename_display, width=500, renderer='markdown'))
+        #else:
+            # filename_display = f"""
+            # <span style="font-size:10pt; font-weight: bold;">Transformer S (kVA) file: </span></span><span style="font-size:10pt;">{self.selected_file_xf_level.object}</span> <br>
+            # <span style="font-size:10pt; font-weight: bold;">Customer S (kVA) file: </span></span><span style="font-size:10pt;">{self.selected_file_cust_level.object}</span>  
+            # """
+            # #return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.btn_select_file, self.btn_select_file_cust_level, self.selected_file_xf_level, self.selected_file_cust_level)
+            # return pn.Column(pn.pane.Markdown(info, width=500, renderer='markdown'), self.select_timezone, self.btn_select_file, self.btn_select_file_cust_level, pn.pane.Markdown(filename_display, width=500, renderer='markdown'))
     
     def update_adoption_info(self, selection):
 

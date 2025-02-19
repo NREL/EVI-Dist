@@ -159,7 +159,7 @@ class pgPlusDisplay(param.Parameterized):
         self.lines_loading_duration_slider = pn.widgets.IntSlider(name='Lines Overloading Duration (min)', start=0, end=15*4*24, step=15, value=0)
         self.lines_loading_duration_options = pn.widgets.RadioBoxGroup(name='RadioBoxGroup', options=['Consecutive Overloading Duration', 'Total Overloading Duration'], inline=True)
         self.lines_loading_button = pn.widgets.Button(name='Apply', button_type='primary')
-        self.bus_loading_slider = pn.widgets.FloatSlider(name='PCC Bus Voltage Cut-off (p.u.)', start=0, end=1.0, step=0.01, value=0.95)
+        self.bus_loading_slider = pn.widgets.FloatSlider(name='PCC Bus Voltage Cut-off (pu)', start=0, end=1.0, step=0.01, value=0.95)
         self.bus_loading_duration_slider = pn.widgets.IntSlider(name='PCC Bus Overloading Duration (min)', start=0, end=15*4*24, step=15, value=0)
         self.bus_loading_duration_options = pn.widgets.RadioBoxGroup(name='RadioBoxGroup', options=['Consecutive Under Voltage Duration', 'Total Under Voltage Duration'], inline=True)
         self.bus_loading_button = pn.widgets.Button(name='Apply', button_type='primary')
@@ -176,16 +176,16 @@ class pgPlusDisplay(param.Parameterized):
                                                     header_filters={
                                                         'Name <br> (ID)': {'type': 'input', 'func': 'like', 'placeholder': '== X'},
                                                         'Rating <br> (kVA)': {'type': 'list', 'func': '=', 'valuesLookup': True, 'sort': 'asc', 'multiselect': False, 'placeholder': '<select>'},
-                                                        'Max Load <br> Power (%)': {'type': 'input', 'func': '>=', 'placeholder': '>= X%'},
-                                                        'Avg Load <br> Power (%)': {'type': 'input', 'func': '>=', 'placeholder': '>= X%'},
-                                                        'Min Load <br> Power (%)': {'type': 'input', 'func': '>=', 'placeholder': '>= X%'},
+                                                        'Max Load <br> Power (pu)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+                                                        'Avg Load <br> Power (pu)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+                                                        'Min Load <br> Power (pu)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
                                                         'Phases <br> (#)': {'type': 'list', 'func': 'in', 'valuesLookup': True, 'sort': 'asc', 'multiselect': True, 'placeholder': '<select>'},
                                                         'Premises <br> (#)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
                                                         'EVs <br> (#)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
                                                         'Charge Events <br> Completed (%)': {'type': 'input', 'func': '<=', 'placeholder': '<= X'},
                                                         },
                                                     height=500,
-                                                    width=870)
+                                                    min_width=870)
         self.plt_trns_kva = self.gen_plt_trns_kva(self.tbl_trns_summary.value.iloc[0]["Name <br> (ID)"])
         self.hist_trns_kva = self.gen_hist_trns_kva(self.tbl_trns_summary.value.iloc[0]["Name <br> (ID)"])
 
@@ -204,12 +204,12 @@ class pgPlusDisplay(param.Parameterized):
                                                         'Length <br> (kft)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
                                                         'Phases <br> (#)': {'type': 'list', 'func': 'in', 'valuesLookup': True, 'sort': 'asc', 'multiselect': True, 'placeholder': '<select>'},
                                                         'Rating <br> (A)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
-                                                        'Max Load <br> (%)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
-                                                        'Avg Load <br> (%)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
-                                                        'Min Load <br> (%)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+                                                        'Max Load <br> (pu)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+                                                        'Avg Load <br> (pu)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+                                                        'Min Load <br> (pu)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
                                                         },
                                                     height=500,
-                                                    width=870)
+                                                    min_width=870)
         self.plt_line_i_mag = self.gen_plt_line_i_mag(self.tbl_lines_summary.value.iloc[0]["Name <br> (ID)"])
         self.hist_line_i_mag = self.gen_hist_line_i_mag(self.tbl_lines_summary.value.iloc[0]["Name <br> (ID)"])
 
@@ -225,12 +225,12 @@ class pgPlusDisplay(param.Parameterized):
                                                         'Bus <br> (ID)': {'type': 'input', 'func': 'like', 'placeholder': '== X'},
                                                         'Is PCC <br> (Y/N)': {'type': 'list', 'func': 'in', 'valuesLookup': True, 'sort': 'asc', 'multiselect': False, 'placeholder': '<select>'},
                                                         'Phases <br> (#)': {'type': 'list', 'func': 'in', 'valuesLookup': True, 'sort': 'asc', 'multiselect': True, 'placeholder': '<select>'},
-                                                        'Min |V| <br> (p.u.)': {'type': 'input', 'func': '<=', 'placeholder': '<= X'},
-                                                        'Avg |V| <br> (p.u.)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
-                                                        'Max |V| <br> (p.u.)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+                                                        'Min |V| <br> (pu)': {'type': 'input', 'func': '<=', 'placeholder': '<= X'},
+                                                        'Avg |V| <br> (pu)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
+                                                        'Max |V| <br> (pu)': {'type': 'input', 'func': '>=', 'placeholder': '>= X'},
                                                         },
                                                     height=500,
-                                                    width=870)
+                                                    min_width=870)
         self.plt_bus_v_mag = self.gen_plt_bus_v_mag(self.tbl_bus_summary.value.iloc[0]["Bus <br> (ID)"])
         self.hist_bus_v_mag = self.gen_hist_bus_v_mag(self.tbl_bus_summary.value.iloc[0]["Bus <br> (ID)"])
 
@@ -278,7 +278,7 @@ class pgPlusDisplay(param.Parameterized):
 
     def gen_bar_trns_loading(self, kva_percent: int = 100):
         fig, df_list = self.gen_bar_trns_loading_fig(kva_percent=kva_percent)
-        return pn.pane.Plotly(fig, height=400, width=570, config={'responsive': True}, sizing_mode='stretch_width'), df_list
+        return pn.pane.Plotly(fig, height=400, min_width=570, config={'responsive': True}, sizing_mode='stretch_width'), df_list
 
     def gen_bar_lines_loading_fig(self, loading_percent: int=100, duration: int = 0, loading_option: str = "Consecutive Overloading Duration"):
         df_lines_loading_count, df_list = self.dop.get_lines_loading(loading_percent=loading_percent, duration=duration*60, loading_option=loading_option)
@@ -338,14 +338,14 @@ class pgPlusDisplay(param.Parameterized):
 
     def gen_bar_lines_loading(self, loading_percent: int=100):
         fig_p, fig_s, df_p, df_s = self.gen_bar_lines_loading_fig(loading_percent)
-        return pn.pane.Plotly(fig_p, height=450, width=570, config={'responsive': True}, sizing_mode='stretch_width'), pn.pane.Plotly(fig_s, height=450, width=570, config={'responsive': True}, sizing_mode='stretch_width'), df_p, df_s
+        return pn.pane.Plotly(fig_p, height=450, min_width=570, config={'responsive': True}, sizing_mode='stretch_width'), pn.pane.Plotly(fig_s, height=450, min_width=570, config={'responsive': True}, sizing_mode='stretch_width'), df_p, df_s
 
     def gen_hist_pcc_min_voltage_fig(self, voltage_cutoff: float = 0.95, duration: int = 0, loading_option: str = "Consecutive Under Voltage Duration"):
         nodes_df = self.dop.get_pcc_min_voltage_summary(voltage_cutoff, duration*60, loading_option)
-        fig = px.histogram(nodes_df, x='Min |V| (p.u.)', nbins=100, title=f"PCC Voltage Minimum for <{duration} min")
+        fig = px.histogram(nodes_df, x='Min |V| (pu)', nbins=100, title=f"PCC Voltage Minimum for <{duration} min")
         fig.add_vline(x=voltage_cutoff, line_width=1, line_dash="dash", line_color="red")
         fig.update_layout(
-            xaxis_title_text = "Voltage Magnitude (p.u.)",
+            xaxis_title_text = "Voltage Magnitude (pu)",
             yaxis_title_text = "Number of Nodes (#)",
             legend=dict(
                 orientation="h",  # Set legend orientation to horizontal
@@ -361,11 +361,11 @@ class pgPlusDisplay(param.Parameterized):
                 b=20
             ),
         )
-        return fig, nodes_df[nodes_df["Min |V| (p.u.)"] <= voltage_cutoff]
+        return fig, nodes_df[nodes_df["Min |V| (pu)"] <= voltage_cutoff]
 
     def gen_hist_pcc_min_voltage(self, voltage_cutoff: float = 0.95, duration: int = 0, loading_option: str = "Consecutive Under Voltage Duration"):
         fig, df_list = self.gen_hist_pcc_min_voltage_fig(voltage_cutoff, duration, loading_option)
-        return pn.pane.Plotly(fig, height=350, width=570, config={'responsive': True}, sizing_mode='stretch_width'), df_list
+        return pn.pane.Plotly(fig, height=350, min_width=570, config={'responsive': True}, sizing_mode='stretch_width'), df_list
 
     def gen_plt_trns_kva_fig(self, trns_name: str) -> pn.pane.Plotly:
         kva_df = self.dop.get_trns_kva_ts(trns_name)
@@ -393,7 +393,7 @@ class pgPlusDisplay(param.Parameterized):
 
     def gen_plt_trns_kva(self, trns_name: str) -> pn.pane.Plotly:
         fig = self.gen_plt_trns_kva_fig(trns_name)
-        return pn.pane.Plotly(fig, width=700, config={'responsive': True}, sizing_mode='stretch_width')
+        return pn.pane.Plotly(fig, min_width=700, config={'responsive': True}, sizing_mode='stretch_width')
 
     def gen_hist_trns_kva_fig(self, trns_name: str) -> pn.pane.Plotly:
         kva_df = self.dop.get_trns_kva_ts(trns_name)
@@ -417,7 +417,7 @@ class pgPlusDisplay(param.Parameterized):
 
     def gen_hist_trns_kva(self, trns_name: str) -> pn.pane.Plotly:
         fig = self.gen_hist_trns_kva_fig(trns_name)
-        return pn.pane.Plotly(fig, width=700, config={'responsive': True}, sizing_mode='stretch_width')
+        return pn.pane.Plotly(fig, min_width=700, config={'responsive': True}, sizing_mode='stretch_width')
 
     def gen_plt_line_i_mag_fig(self, line_name: str) -> pn.pane.Plotly:
         i_mag_df = self.dop.get_line_i_ts(line_name)
@@ -443,7 +443,7 @@ class pgPlusDisplay(param.Parameterized):
 
     def gen_plt_line_i_mag(self, line_name: str) -> pn.pane.Plotly:
         fig = self.gen_plt_line_i_mag_fig(line_name)
-        return pn.pane.Plotly(fig, width=700, config={'responsive': True}, sizing_mode='stretch_width')
+        return pn.pane.Plotly(fig, min_width=700, config={'responsive': True}, sizing_mode='stretch_width')
 
     def gen_hist_line_i_mag_fig(self, line_name: str) -> pn.pane.Plotly:
         i_mag_df = self.dop.get_line_i_ts(line_name)
@@ -467,7 +467,7 @@ class pgPlusDisplay(param.Parameterized):
 
     def gen_hist_line_i_mag(self, line_name: str) -> pn.pane.Plotly:
         fig = self.gen_hist_line_i_mag_fig(line_name)
-        return pn.pane.Plotly(fig, width=700, config={'responsive': True}, sizing_mode='stretch_width')
+        return pn.pane.Plotly(fig, min_width=700, config={'responsive': True}, sizing_mode='stretch_width')
 
     def gen_plt_bus_v_mag_fig(self, bus_name: str) -> pn.pane.Plotly:
         v_mag_df = self.dop.get_bus_v_ts(bus_name)
@@ -493,7 +493,7 @@ class pgPlusDisplay(param.Parameterized):
 
     def gen_plt_bus_v_mag(self, bus_name: str) -> pn.pane.Plotly:
         fig = self.gen_plt_bus_v_mag_fig(bus_name)
-        return pn.pane.Plotly(fig, width=700, config={'responsive': True}, sizing_mode='stretch_width')
+        return pn.pane.Plotly(fig, min_width=700, config={'responsive': True}, sizing_mode='stretch_width')
 
     def gen_hist_bus_v_mag_fig(self, bus_name: str) -> pn.pane.Plotly:
         v_mag_df = self.dop.get_bus_v_ts(bus_name)
@@ -517,7 +517,7 @@ class pgPlusDisplay(param.Parameterized):
 
     def gen_hist_bus_v_mag(self, bus_name: str) -> pn.pane.Plotly:
         fig = self.gen_hist_bus_v_mag_fig(bus_name)
-        return pn.pane.Plotly(fig, width=700, config={'responsive': True}, sizing_mode='stretch_width')
+        return pn.pane.Plotly(fig, min_width=700, config={'responsive': True}, sizing_mode='stretch_width')
 
     def save_session_JSON(self):
         #first clear user's dir information from input file names.
@@ -659,7 +659,7 @@ class pgPlusDisplay(param.Parameterized):
                 title="Transformer Loading Summary",
                 collapsed=False,
                 height=600,
-                width=900,
+                min_width=900,
                 sizing_mode='stretch_width',
             ),
             pn.Spacer(height=10),
@@ -689,7 +689,7 @@ class pgPlusDisplay(param.Parameterized):
                 title="Lines Loading Summary",
                 collapsed=False,
                 height=1050,
-                width=900,
+                min_width=900,
                 sizing_mode='stretch_width',
             ),
             pn.Spacer(height=10),
@@ -712,7 +712,7 @@ class pgPlusDisplay(param.Parameterized):
                 title="PCC Bus Voltage Summary",
                 collapsed=False,
                 height=600,
-                width=900,
+                min_width=900,
                 sizing_mode='stretch_width',
             ),
             pn.Spacer(height=10),
@@ -725,7 +725,7 @@ class pgPlusDisplay(param.Parameterized):
                             ("Time Series", self.plt_trns_kva),
                             ("Histogram", self.hist_trns_kva),
                             tabs_location='left',
-                            width=900,
+                            min_width=900,
                             sizing_mode='stretch_width',
                         ),
                         sizing_mode='stretch_width',
@@ -738,7 +738,7 @@ class pgPlusDisplay(param.Parameterized):
                             ("Time Series", self.plt_line_i_mag),
                             ("Histogram", self.hist_line_i_mag),
                             tabs_location='left',
-                            width=900,
+                            min_width=900,
                             sizing_mode='stretch_width',
                         ),
                         sizing_mode='stretch_width',
@@ -751,7 +751,7 @@ class pgPlusDisplay(param.Parameterized):
                             ("Time Series", self.plt_bus_v_mag),
                             ("Histogram", self.hist_bus_v_mag),
                             tabs_location='left',
-                            width=900,
+                            min_width=900,
                             sizing_mode='stretch_width',
                         ),
                         sizing_mode='stretch_width',
@@ -761,11 +761,11 @@ class pgPlusDisplay(param.Parameterized):
                 title="Analyze Individual Elements",
                 collapsed=False,
                 height=1070,
-                width=900,
+                min_width=900,
                 sizing_mode='stretch_width',
                 ),
             # pn.Row(self.tbl_ev_loads),
-            width=900,
+            min_width=900,
             sizing_mode='stretch_width',
         )
         return app

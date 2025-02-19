@@ -61,7 +61,7 @@ class pgPlusDSSUpload(param.Parameterized):
                                pn.widgets.StaticText(value="Selected File: ", align=('center','center')),
                                ]
 
-        self.file_browse_buttons[0].on_click(lambda event, button_index=0: self.select_files(button_index, event, "inputs/opendss_model"))
+        self.file_browse_buttons[0].on_click(lambda event, button_index=0: self.select_files(button_index, event, "data/opendss_model"))
         self.file_browse_buttons[1].on_click(lambda event, button_index=1: self.select_files(button_index, event, "data/premise_data"))
         self.file_browse_buttons[2].on_click(lambda event, button_index=2: self.select_files(button_index, event, "data/adoptions"))
 

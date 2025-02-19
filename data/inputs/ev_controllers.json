@@ -21,10 +21,10 @@
 },
 
 "FCFS + SM" : {
-    "description" : "This controller option also follows the first-come, first-served principle, but it also ensures that all EVs receives a minimum average percentage of the available power capacity that can be adjusted using the slider below. <br><br> Note: You need to upload AMI data for P and Q profiles."
+    "description" : "This controller option also follows the first-come, first-served principle, but it also ensures that all EVs receive a minimum average percentage of the available power capacity that can be adjusted using the slider below. <br><br> Note: You need to upload AMI data for P and Q profiles."
 },
 
-"Equal Shares" : {
+"Equal Sharing" : {
     "description" : "The remaining transformer capacity will be distributed evenly among all connected EVs. <br><br> Note: You need to upload AMI data for P and Q profiles."
 }
 }

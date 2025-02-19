@@ -1,6 +1,7 @@
 
 from datetime import datetime, timedelta
 import pandas as pd
+import math
 
 
 # EV energy tracking version ( EV energy requirment known, stop charging when energy requirement is met)
@@ -47,7 +48,8 @@ class ChargingManagementSystem:
         self.trns_id = ""
         self.current_time = None
         self.capacity_rated = 0 #setting to zero but it should get overwritten immediately. But it should be easy to catch if it doesn't
-        self.previous_time_step_total_load = 0
+        self.previous_time_step_base_load_kW = 0
+        self.previous_time_step_base_load_kvar = 0
         self.previous_time_step_ev_load = 0
         self.allocation_method = allocation_method
         self.time_step_sec = time_step_sec #TODO: let this get inherited instead of default setting
@@ -162,7 +164,8 @@ class ChargingManagementSystem:
         return {ev.ev_id: ev.allocated_power for ev in self.station.connected_evs if ev.is_connected(self.current_time)}
 
     def simulate_step(self, time_step: timedelta):
-        remaining_capacity = max(min(self.capacity_rated - self.previous_time_step_total_load + self.previous_time_step_ev_load, self.capacity_rated), 0)
+        previous_time_step_base_load = math.sqrt((self.previous_time_step_base_load_kW)**2 + self.previous_time_step_base_load_kvar**2)
+        remaining_capacity = max(min(self.capacity_rated - previous_time_step_base_load, self.capacity_rated), 0)
 
         #reset ev loads to zero
         for ev in self.station.connected_evs:
@@ -174,7 +177,7 @@ class ChargingManagementSystem:
             self.allocate_power_first_come_first_served(remaining_capacity)
         elif self.allocation_method == 'FCFS + SM50':
             self.allocate_power_fcfs_with_minimum(remaining_capacity)
-        elif self.allocation_method == 'EQUAL SHARES':
+        elif self.allocation_method == 'EQUAL SHARING':
             self.allocate_power_equal_sharing(remaining_capacity)
 
         ev_allocated_powers = self.get_ev_allocated_power()

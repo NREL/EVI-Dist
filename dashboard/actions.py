@@ -28,21 +28,22 @@ class DataOperator:
         self.transformer_data = self.transformer_data[self.transformer_data['Feeder'] == self.feeder]
         itenary_data = pd.read_csv(self.paths['ev_adoption'])
 
-        if os.path.isfile(configs['ami_data_file']):
-            try:
-                self.base_load = pd.read_csv(self.paths['baseload_profiles'])
-                self.base_load = self.base_load.iloc[:-1:self.res]
-            except:
-                self.base_load = pd.DataFrame({'date' : ['1/1/2024  0:00:00 AM']})
-        else:
+        try:
+            self.base_load = pd.read_csv(self.paths['baseload_profiles_S']) # This has been modified in v1.0.1 since there is now files for P and Q profiles as well
+            self.base_load = self.base_load.iloc[:-1:self.res]
+        except:
             self.base_load = pd.DataFrame({'date' : ['1/1/2024  0:00:00 AM']})
+
         self.controller = configs['controller']
         self.itenary_data_fs = itenary_data[(itenary_data['Feeder'] == self.feeder)]
 
         self.ev_load = dict()
+        self.agg_load = dict()
         for cntrl in self.controller:
             self.ev_load[cntrl] = pd.read_csv(self.paths['ev_profiles'][cntrl])
             self.ev_load[cntrl] = self.ev_load[cntrl].iloc[::self.res]
+            self.agg_load[cntrl] = pd.read_csv(self.paths['agg_profiles'][cntrl])
+            self.agg_load[cntrl] = self.agg_load[cntrl].iloc[::self.res]
 
         with open(self.paths['mappings'], "rb") as pickle_file:
             self.mappings = pickle.load(pickle_file)
@@ -69,6 +70,18 @@ class DataOperator:
         except:
             return np.zeros((self.sim_len,))
 
+    def get_agg_feeder_load(self):
+        # TODO: This result can be pre-calculated and stored in a variable, rather than being called every time when switched to the feeder mode
+        agg_load = dict()
+        for cntrl in self.controller:
+            try:
+                f = self.agg_load[cntrl].iloc[:,2:].sum(axis=1)
+                agg_load[cntrl] =  np.array(f)
+            except:
+                agg_load[cntrl] = np.zeros((self.sim_len,))
+
+        return agg_load
+
     def get_agg_ev_load_by_feeder(self, controller):
         return self.ev_load[controller]['power']
 
@@ -77,6 +90,12 @@ class DataOperator:
         for cntrl in self.controller:
             power[cntrl] = self.ev_load[cntrl]['power']
         return power
+
+    def get_agg_xf_load_by_xf_id(self, xf_id):
+        agg_load = dict()
+        for cntrl in self.controller:
+            agg_load[cntrl] = self.agg_load[cntrl][str(xf_id)]
+        return agg_load
 
     def get_veh_ids_for_xf(self, xf_id):
         itenary_by_f_by_xf = self.itenary_data_fs[self.itenary_data_fs['Transformer ID'] == xf_id]
@@ -446,9 +465,9 @@ class DataOperatorPlus:
         return pd.DataFrame({
             "Name <br> (ID)": [trns.name for trns in self.trns_list],
             "Rating <br> (kVA)": [int(trns.kva_rating) for trns in self.trns_list],
-            "Max Load <br> Power (%)": [trns.kva_mag_max/trns.kva_rating*100 for trns in self.trns_list],
-            "Avg Load <br> Power (%)": [trns.kva_mag_avg/trns.kva_rating*100 for trns in self.trns_list],
-            "Min Load <br> Power (%)": [trns.kva_mag_min/trns.kva_rating*100 for trns in self.trns_list],
+            "Max Load <br> Power (pu)": [round(trns.kva_mag_max/trns.kva_rating,2) for trns in self.trns_list],
+            "Avg Load <br> Power (pu)": [round(trns.kva_mag_avg/trns.kva_rating,2) for trns in self.trns_list],
+            "Min Load <br> Power (pu)": [round(trns.kva_mag_min/trns.kva_rating,2) for trns in self.trns_list],
             "Phases <br> (#)": [str(trns.phases) for trns in self.trns_list],
             "Premises <br> (#)": [trns.premise_count for trns in self.trns_list],
             "EVs <br> (#)": [len(trns.ev_list) for trns in self.trns_list],
@@ -579,9 +598,9 @@ class DataOperatorPlus:
             "Length <br> (kft)": [ln.length*5280 for ln in self.lines_list],
             "Phases <br> (#)": [str(ln.phases) for ln in self.lines_list],
             "Rating <br> (A)": [ln.i_mag_rating for ln in self.lines_list],
-            "Max Load <br> (%)": [ln.i_mag_max/ln.i_mag_rating*100 for ln in self.lines_list],
-            "Avg Load <br> (%)": [ln.i_mag_avg/ln.i_mag_rating*100 for ln in self.lines_list],
-            "Min Load <br> (%)": [ln.i_mag_min/ln.i_mag_rating*100 for ln in self.lines_list],
+            "Max Load <br> (pu)": [round(ln.i_mag_max/ln.i_mag_rating,2) for ln in self.lines_list],
+            "Avg Load <br> (pu)": [round(ln.i_mag_avg/ln.i_mag_rating,2) for ln in self.lines_list],
+            "Min Load <br> (pu)": [round(ln.i_mag_min/ln.i_mag_rating,2) for ln in self.lines_list],
         })
 
     def get_line_i_ts(self, line_name: str):
@@ -613,8 +632,8 @@ class DataOperatorPlus:
     def get_nodes_tbl_df(self):
         return pd.DataFrame({
             "Name": [node.name for node in self.nodes_list],
-            "Min |V| (p.u.)": [node.v_mag_min for node in self.nodes_list],
-            "Max |V| (p.u.)": [node.v_mag_max for node in self.nodes_list],
+            "Min |V| (pu)": [node.v_mag_min for node in self.nodes_list],
+            "Max |V| (pu)": [node.v_mag_max for node in self.nodes_list],
         })
 
     def get_node_v_ts(self, node_name: str):
@@ -638,7 +657,7 @@ class DataOperatorPlus:
             self.bus_list.append(bus)
 
     def get_pcc_min_voltage_summary(self, voltage_cutoff: int = 0.95, duration: int = 0, loading_option: str = "Consecutive Under Voltage Duration"):
-        bus_df = pd.DataFrame(columns=["PCC Bus", "Min |V| (p.u.)"])
+        bus_df = pd.DataFrame(columns=["PCC Bus", "Min |V| (pu)"])
 
         for bus in self.bus_list:
             v_mag_min = float('inf')
@@ -664,7 +683,7 @@ class DataOperatorPlus:
                 # if sum([dt for p in bus.kva_mag if p/trns.kva_rating*100 >= kva_percent]) >= duration:
                 #     is_overloaded = True
 
-            bus_df = pd.concat([bus_df, pd.DataFrame({"PCC Bus": [bus.name], "Min |V| (p.u.)": [v_mag_min]})])
+            bus_df = pd.concat([bus_df, pd.DataFrame({"PCC Bus": [bus.name], "Min |V| (pu)": [v_mag_min]})])
 
         return bus_df
 
@@ -673,9 +692,9 @@ class DataOperatorPlus:
             "Bus <br> (ID)": [bus.name for bus in self.bus_list],
             "Is PCC <br> (Y/N)": ["Y" if bus.is_pcc else "N" for bus in self.bus_list],
             "Phases <br> (#)": [str(len(bus.nodes)) for bus in self.bus_list],
-            "Min |V| <br> (p.u.)": [min(n.v_mag_min for n in bus.nodes) for bus in self.bus_list],
-            "Avg |V| <br> (p.u.)": [sum(n.v_mag_avg for n in bus.nodes)/len(bus.nodes) for bus in self.bus_list],
-            "Max |V| <br> (p.u.)": [min(n.v_mag_max for n in bus.nodes) for bus in self.bus_list],
+            "Min |V| <br> (pu)": [round(min(n.v_mag_min for n in bus.nodes),2) for bus in self.bus_list],
+            "Avg |V| <br> (pu)": [round(sum(n.v_mag_avg for n in bus.nodes)/len(bus.nodes),2) for bus in self.bus_list],
+            "Max |V| <br> (pu)": [round(min(n.v_mag_max for n in bus.nodes),2) for bus in self.bus_list],
         })
 
     def get_bus_v_ts(self, bus_name: str):

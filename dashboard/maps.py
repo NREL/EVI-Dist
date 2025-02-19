@@ -20,7 +20,7 @@ class Map():
                 icon=folium.Icon(color="green"),
             ).add_to(marker_cluster)
 
-        self.map = pn.pane.plot.Folium(self.m, height=400, width=600)
+        self.map = pn.pane.plot.Folium(self.m, height=500, width=800)
 
     def gen_map(self):
         return self.map

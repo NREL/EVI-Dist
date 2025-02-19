@@ -157,7 +157,7 @@ class LinePlot(Plot):
                 gridwidth=0.5  # Set the width of the gridlines
             )
         )
-        self.fig.update_layout(legend=dict(orientation='h', yanchor='top', y=1.2, xanchor='right', x=1))
+        self.fig.update_layout(legend=dict(orientation='v', yanchor='top', y=1.0, xanchor='left', x=1.05))
 
         return self.fig
 

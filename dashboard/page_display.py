@@ -1,5 +1,6 @@
 import os
 import sys
+import copy
 parent_directory = os.getcwd()
 
 sys.path.append(parent_directory + "/modules")
@@ -53,16 +54,21 @@ class pgDisplay(param.Parameterized):
         self.paths['premise_report'] = self.file_names['premise_report']
         self.paths['ev_adoption'] = self.file_names['ev_adoption']
         self.paths['ami_cust_lvl'] = self.file_names['ami_cust_lvl']
-        self.paths['baseload_profiles'] = parent_directory + \
-            "/data/temp/baseload_profiles.csv"
+        self.paths['baseload_profiles_S'] = parent_directory + "/data/temp/baseload_profiles_S.csv"
+        self.paths['baseload_profiles_P'] = parent_directory + "/data/temp/baseload_profiles_P.csv"
+        self.paths['baseload_profiles_Q'] = parent_directory + "/data/temp/baseload_profiles_Q.csv"
+        # Add baseload_profiles_P,Q,S and make sure they are also saved with correct names. 
         self.paths['ev_profiles'] = dict()
-
+        self.paths['agg_profiles'] = dict()
         for cntl in self.configs['controller']:
             self.paths['ev_profiles'][cntl] = parent_directory + \
                 "/data/temp/ev_profiles_" + cntl + ".csv"
+            self.paths['agg_profiles'][cntl] = parent_directory + \
+                "/data/temp/aggregated_profiles_" + cntl + ".csv"
 
         self.paths['mappings'] = parent_directory + \
             "/data/mappings/mappings.pkl"
+        
         self.dop = DataOperator(self.paths, self.configs)
         if os.path.isfile(self.paths['ami_cust_lvl']):
             self.paths['total_load_dict'] = parent_directory + \
@@ -102,6 +108,7 @@ class pgDisplay(param.Parameterized):
             name='Select controller', options=self.configs['controller'])
 
         self.table = self.dop.get_table()
+        self.table = self.table.rename(columns={'Bank Size': 'Bank Size (kVA)'})
         # THIS NEEDS TO BE FIXED
         self.obj_map = Map([39.638143, -104.788596], self.table)
         self.folium_pane = self.obj_map.map
@@ -120,9 +127,9 @@ class pgDisplay(param.Parameterized):
                     self.dop.mappings['xf_mappings'][self.configs['feeder']][row['Transformer ID']]['premises'])
                 max_combined_load = self.dop.get_max_combined_load_by_xf_among_controllers(
                     row['Transformer ID'])
-                if not (row['Bank Size'] == 'Unknown'):
+                if not (row['Bank Size (kVA)'] == 'Unknown'):
                     max_overload = round(
-                        max_combined_load / int(row['Bank Size']) * 100)
+                        max_combined_load / int(row['Bank Size (kVA)']) * 100)
                 else:
                     max_overload = np.nan
 
@@ -149,9 +156,9 @@ class pgDisplay(param.Parameterized):
         self.table['Max Overload (%)'] = pd.to_numeric(self.table['Max Overload (%)'], errors='coerce')
         self.table['Num of Prems'] = pd.to_numeric(self.table['Num of Prems'], errors='coerce')
         self.table['Num of EVs'] = pd.to_numeric(self.table['Num of EVs'], errors='coerce')
-        self.table['Bank Size'] = pd.to_numeric(self.table['Bank Size'], errors='coerce')
+        self.table['Bank Size (kVA)'] = pd.to_numeric(self.table['Bank Size (kVA)'], errors='coerce')
         self.obj_table = Table(self.table.loc[:, [
-                               'Transformer ID', 'Bank Size', 'Num of Prems', 'Num of EVs', 'Max Overload (%)']])
+                               'Transformer ID', 'Bank Size (kVA)', 'Num of Prems', 'Num of EVs', 'Max Overload (%)']])
         self.premise_table = self.obj_table.table
 
         self.save_button = pn.widgets.FileDownload(
@@ -235,6 +242,11 @@ class pgDisplay(param.Parameterized):
                         # Use original file names in ZIP
                         zip_file.write(
                             path2, arcname="ev_profiles_" + name2 + ".csv")
+                elif name == "agg_profiles":
+                    for name2, path2 in path.items():
+                        # Use original file names in ZIP
+                        zip_file.write(
+                            path2, arcname="aggregated_profiles_" + name2 + ".csv")
                 elif name == "mappings" or name == "total_load_dict":
                     zip_file.write(path, arcname=name + ".pkl")
                 else:
@@ -263,18 +275,18 @@ class pgDisplay(param.Parameterized):
 
         if self.toggle_feeder_plots.value:
             baseload = self.dop.get_feeder_load()
-            ev_load = self.dop.get_agg_ev_load_by_feeder(
-                self.select_controller.value)
+            agg_load = self.dop.get_agg_feeder_load()
+            #ev_load = self.dop.get_agg_ev_load_by_feeder(self.select_controller.value) # No longer needed if obtained directly from ev_load_comp
             ev_load_comp = self.dop.get_agg_ev_load_by_feeder_comparison()
             title = "Feeder level"
         else:
-            baseload = self.dop.get_base_load_by_xf_id(xf_id)
-            ev_load = self.dop.get_agg_ev_load_by_xf_id(
-                xf_id, self.select_controller.value)
-            ev_load_comp = self.dop.get_agg_ev_load_by_xf_id_comparison(xf_id)
-            each_ev_load = self.dop.get_each_ev_load_for_xf(
-                xf_id, self.select_controller.value)
+            baseload = self.dop.get_base_load_by_xf_id(xf_id) # This now refers to "baseload_profiles_S" generated using P and Q profiles. 
+            agg_load = self.dop.get_agg_xf_load_by_xf_id(xf_id)
+            #ev_load = self.dop.get_agg_ev_load_by_xf_id(xf_id, self.select_controller.value) # This refers to the aggregated EV load for the selected controller.
+            ev_load_comp = self.dop.get_agg_ev_load_by_xf_id_comparison(xf_id) # This refers to the aggregated EV load for all controllers. e.g., ev_load_comp['controller_name']
+            # TODO: ev_load itself may be reduntant as those profiles are already included in ev_load_comp. This offers some performance improvements and freeing up RAM. 
             title = 'XF ID: ' + str(xf_id)
+            each_ev_load = self.dop.get_each_ev_load_for_xf(xf_id, self.select_controller.value) # This refers to the individual EV load for the selected controller. There could exist some improvements by removing code dublication. It fetches the same data multiple times.            title = 'XF ID: ' + str(xf_id)
             signal_each_ev_load = dict()
             for key in each_ev_load.keys():
                 signal_each_ev_load[key] = Signal(
@@ -283,18 +295,15 @@ class pgDisplay(param.Parameterized):
         signal_base_load = Signal(
             time, baseload, 'Baseload', self.dop.res * 60, ('m', 'kW'))
         signal_ev_load = Signal(
-            time, ev_load, 'EV load', self.dop.res * 60, ('m', 'kW'))
+            time, ev_load_comp[self.select_controller.value], 'EV load', self.dop.res * 60, ('m', 'kW'))
 
-        signal_ev_load_comp = dict()
+        #signal_ev_load_comp = dict()
         signal_combined_load_comp = dict()
         for cntrl in self.configs['controller']:
-            signal_ev_load_comp[cntrl] = Signal(
-                time, ev_load_comp[cntrl], cntrl, self.dop.res * 60, ('m', 'kW'))
-            signal_combined_load_comp[cntrl] = signal_base_load + \
-                signal_ev_load_comp[cntrl]
-            signal_combined_load_comp[cntrl].name = cntrl
+            signal_combined_load_comp[cntrl] = Signal(time, agg_load[cntrl], cntrl, self.dop.res * 60, ('m', 'kW'))
 
-        signal_combined_load = signal_base_load + signal_ev_load
+        #signal_combined_load = signal_base_load + signal_ev_load
+        signal_combined_load = copy.copy(signal_combined_load_comp[self.select_controller.value])
         signal_combined_load.name = 'Baseload+EV'
 
         if not self.toggle_feeder_plots.value:
@@ -346,7 +355,7 @@ class pgDisplay(param.Parameterized):
         param_for_timeseries['ylabel'] = 'Power [kVA]'
         param_for_timeseries['title'] = title
         param_for_timeseries['theme'] = 'plotly_white' if pn.config.theme == 'default' else 'plotly_dark'
-        param_for_timeseries['width'] = 650
+        param_for_timeseries['width'] = 800
         param_for_timeseries['height'] = 425
         param_for_timeseries['fontsize'] = 14
 
@@ -390,12 +399,12 @@ class pgDisplay(param.Parameterized):
 
     def panel(self):
         self.get_selected_xf(int(self.selected_row['Transformer ID']), threshold=int(
-            self.selected_row['Bank Size']))
+            self.selected_row['Bank Size (kVA)']))
 
         def click(self, event):
 
             self.selected_row = self.table.iloc[event.row]
-            threshold = int(self.selected_row['Bank Size'])
+            threshold = int(self.selected_row['Bank Size (kVA)'])
             xf = int(self.selected_row['Transformer ID'])
             x = self.selected_row['Longitude_X']
             y = self.selected_row['Latitude_Y']
@@ -411,7 +420,7 @@ class pgDisplay(param.Parameterized):
                 event (_type_): _description_
             """
             self.get_selected_xf(int(self.selected_row['Transformer ID']), threshold=int(
-                self.selected_row['Bank Size']))
+                self.selected_row['Bank Size (kVA)']))
 
         def on_select(event):
             """Event action for selecting the controller type.
@@ -420,7 +429,7 @@ class pgDisplay(param.Parameterized):
                 event (_type_): _description_
             """
             self.get_selected_xf(int(self.selected_row['Transformer ID']), threshold=int(
-                self.selected_row['Bank Size']))
+                self.selected_row['Bank Size (kVA)']))
             # Update results for the selected controller
 
         settings1 = pn.Column(

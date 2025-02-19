@@ -5,13 +5,14 @@ import pytz
 
 def generate_upsampled_baseload(df, month, file_name, timezone):
     # Convert the 'time' column to datetime format
-    print("Generating baseload profiles...")
+    print(f"Generating baseload profiles for {file_name} ...\n")
     file_path_to_save = os.getcwd() + "/data/temp/" + file_name + ".csv"
 
     df['time'] = pd.to_datetime(df['time'])
     #df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert('America/Denver')
-    df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert(timezone)
+    df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert(timezone) #TODO: This is a temporary fix.
 
+    #print("Data type of df['time']", type(df['time']))
     # Extract the year from the first row of the DataFrame
     year = df['time'].dt.year.iloc[0]
 
@@ -30,6 +31,7 @@ def generate_upsampled_baseload(df, month, file_name, timezone):
     first_monday = timezone.localize(first_monday)
     first_sunday = timezone.localize(first_sunday)
 
+    #print("Data type of first_monday", type(first_monday))
     # Filter rows between the first Monday and the first Sunday
     filtered_df = df[(df['time'] >= first_monday) & (df['time'] < first_sunday + timedelta(days=1))]
 
@@ -66,4 +68,6 @@ def generate_upsampled_baseload(df, month, file_name, timezone):
     # Save
     removed_last_sample_df.to_csv(file_path_to_save, index=True)
 
-    print("Completed!")
+    print(f"Baseload profile generation for {file_name} completed.\n")
+
+    return removed_last_sample_df

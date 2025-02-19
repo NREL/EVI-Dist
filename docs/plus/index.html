@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>EVI-DiST Plus - EVI-DiST Documentation (v1.0.0)</title>
+        <title>EVI-DiST Plus - EVI-DiST Documentation (v1.0.1)</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/fontawesome.min.css" rel="stylesheet">
         <link href="../css/brands.min.css" rel="stylesheet">
@@ -26,7 +26,7 @@
     <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="../index.html">EVI-DiST Documentation (v1.0.0)</a>
+                <a class="navbar-brand" href="../index.html">EVI-DiST Documentation (v1.0.1)</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -212,7 +212,7 @@ This csv file should contain columns related to EV charging events such as <code
 <li><code>Select the month of simulation</code>: choose the month that EV charging events in <strong>EV adoption file</strong> will be filtered by. The available months come from the <strong>EV adoption file</strong>.</li>
 <li><code>Select the day of week of simulation</code>: choose the day of week that EV charging events in <strong>EV adoption file</strong> will be filtered by.</li>
 <li><code>Select feeder</code>: choose the feeder that EV charging events in <strong>EV adoption file</strong> will be filtered by. <strong>NOTE</strong>: be sure that the selected feeder name matches the feeder that the <strong>main OpenDSS file</strong> is for, otherwise the simulation will not properly model EV charging.</li>
-<li><code>Select control</code>: choose the EV charging controller to use in the simulation. When a controller is selected, a text box to the right of the controller list will provide details on the controller. The available controllers are <code>Uncontrolled</code>, <code>TOU ASAP</code>, <code>TOU ALAP</code>, <code>TOU Random</code>, <code>FCFC</code>, and <code>FCFC + SM50</code>. <strong>EVI-DiST Plus</strong> only supports selecting a single controller for simulation.</li>
+<li><code>Select control</code>: choose the EV charging controller to use in the simulation. When a controller is selected, a text box to the right of the controller list will provide details on the controller. The available controllers are <code>Uncontrolled</code>, <code>TOU ASAP</code>, <code>TOU ALAP</code>, <code>TOU Random</code>, <code>Equal Sharing</code>, <code>FCFS</code>, and <code>FCFS + SM50</code>. <strong>EVI-DiST Plus</strong> only supports selecting a single controller for simulation.</li>
 </ol>
 <p><img alt="" src="../img/plus_configs.png" /></p>
 <p>Once the simulation is configured, proceed to the next page by clicking the <code>Next</code> button.</p>
@@ -277,9 +277,9 @@ The table here lists the following details of each transformer, where each colum
 <ul>
 <li><code>Name (ID)</code>: the name assigned to the transformer. This will match the names in the list of overloaded transformers in the <strong>Transformer Loading Summary</strong> section. You can filter for a specific transformer or for a subset of transformers that have similar names by entering the transformer name in the <code>== X</code> textbox.</li>
 <li><code>Rating (kVA)</code>: the power rating of the transformer in kVA. You can filter for a subset of transformers with a certain power rating(s) using <code>&lt;select&gt;</code> dropdown list.</li>
-<li><code>Max Load Power (%)</code>: the maximum load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had a max load power greater than the specified value.</li>
-<li><code>Avg Load Power (%)</code>: the average load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had an avg load power greater than the specified value.</li>
-<li><code>Min Load Power (%)</code>: the minimum load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had a min load power greater than the specified value.</li>
+<li><code>Max Load Power (pu)</code>: the maximum load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had a max load power greater than the specified value.</li>
+<li><code>Avg Load Power (pu)</code>: the average load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had an avg load power greater than the specified value.</li>
+<li><code>Min Load Power (pu)</code>: the minimum load supplied by the transformer as a percentage of its power rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of transformers that had a min load power greater than the specified value.</li>
 <li><code>Phases (#)</code>: the number of output (LV side) phases of the transformer. The <code>&lt;select&gt;</code> dropdown list will filter the list of transformers to match the number(s) of phases selected.</li>
 <li><code>Premises (#)</code>: the number of premises that this transformer supplies. You can filter transformers that have a mimimum number of premises using the <code>&gt;= X</code> textbox.</li>
 <li><code>EVs (#)</code>: the number of EVs that had a charging event supplied by this transformer. <strong>NOTE</strong>: this does not tell you the TOTAL number of EVs that charge using this transformer based on the input charge event file. It will only tell you the number of EVs that had a charging event during the simulation month and day. Selecting a different day and month may result in a different number of EVs. You can filter transformers that have a minimum number of premises using the <code>&gt;= X</code> textbox.</li>
@@ -299,9 +299,9 @@ The table here lists the following details of each line, where each column can b
 <li><code>Length (kft)</code>: the length of the distribution line in thousands of feet. Filter for a minimum line length using the <code>&gt;= X</code> textbox.</li>
 <li><code>Phases (#)</code>: the number of phases of the line. The <code>&lt;select&gt;</code> dropdown list will filter the list of lines to match the number(s) of phases selected.</li>
 <li><code>Rating (A)</code>: the max current rating of the line in Amperes. Filter for a minimum current rating using the <code>&gt;=X</code> textbox.</li>
-<li><code>Max Load (%)</code>: the maximum load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had a max load current greater than the specified value.</li>
-<li><code>Avg Load (%)</code>: the average load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had an avg load current greater than the specified value.</li>
-<li><code>Min Load (%)</code>: the minimum load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had a min load current greater than the specified value.</li>
+<li><code>Max Load (pu)</code>: the maximum load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had a max load current greater than the specified value.</li>
+<li><code>Avg Load (pu)</code>: the average load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had an avg load current greater than the specified value.</li>
+<li><code>Min Load (pu)</code>: the minimum load through the line as a percentage of its current rating. Entering a percentage value in the <code>&gt;= X%</code> textbox will filter the list of lines that had a min load current greater than the specified value.</li>
 </ul>
 <p>Clicking on a line row in the table will select that line and a time series plot of its load current magnitude will be displayed below the table. Each individual phase current is shown as traces. This graph is interactive and a subset of line phases can be selected, or the graph can be zoomed in for better detail.</p>
 <p><img alt="" src="../img/plus_display_lines.png" style="height:75%;width:75%" /></p>

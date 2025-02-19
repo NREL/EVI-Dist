@@ -63,26 +63,56 @@ class SimLite(Simulation):
     def __init__(self, input_files, configs) -> None:
         super().__init__(input_files, configs)
         price_based_controllers = ['Uncontrolled', 'TOU ASAP', 'TOU ALAP' , 'TOU Random']
-        xf_mitigation_controllers = ['FCFS' , 'FCFS + SM' , 'Equal Shares']
-        self.xf_mit_control_mapping = {'first_come_first_served' : 'FCFS', 'fcfs_with_minimum' : 'FCFS + SM', 'equal_sharing' : 'Equal Shares'}
-        self.is_any_price_based_cont_selected = any(key in self.configs['controller'] for key in ['Uncontrolled', 'TOU ASAP', 'TOU ALAP' , 'TOU Random'])
+        xf_mitigation_controllers = ['FCFS' , 'FCFS + SM' , 'Equal Sharing']
+        self.xf_mit_control_mapping = {'first_come_first_served' : 'FCFS', 'fcfs_with_minimum' : 'FCFS + SM', 'equal_sharing' : 'Equal Sharing'}
+        self.is_any_price_based_cont_selected = any(key in self.configs['controller'] for key in price_based_controllers)
         self.is_any_xf_ol_mi_cont_selected = any(key in self.configs['controller'] for key in xf_mitigation_controllers)
         self.price_based_selected_controllers = [key for key in price_based_controllers if key in self.configs['controller']]
         self.xf_ol_mi_selected_controllers = [key for key in xf_mitigation_controllers if key in self.configs['controller']]
-        if self.is_any_xf_ol_mi_cont_selected:
-            self.df_baseload_P = pd.read_csv(self.configs['ami_data_file_P'])
-            self.df_baseload_Q = pd.read_csv(self.configs['ami_data_file_Q'])
+        #if self.is_any_xf_ol_mi_cont_selected:
+        self.df_baseload_P = pd.read_csv(self.configs['ami_data_file_P'])
+        self.df_baseload_Q = pd.read_csv(self.configs['ami_data_file_Q'])
+
+        self.load_P = self.df_baseload_P.copy().set_index('time')
+        self.load_Q = self.df_baseload_Q.copy().set_index('time')
+
+        self.load_S = self._gen_apparent_power_profiles(self.load_P, self.load_Q)
+
+        self.load_S.reset_index(inplace=True)
+        self.load_P.reset_index(inplace=True)
+        self.load_Q.reset_index(inplace=True)
+
+        self.load_S =  self.load_S.drop(columns=['Timestamp', 'Month', 'Hour', 'Day_of_the_Week', 'Is_Holiday', 'total_power'])
+        self.load_P =  self.load_P.drop(columns=['Timestamp', 'Month', 'Hour', 'Day_of_the_Week', 'Is_Holiday', 'total_power'])
+        self.load_Q =  self.load_Q.drop(columns=['Timestamp', 'Month', 'Hour', 'Day_of_the_Week', 'Is_Holiday', 'total_power'])
+        
+        self.load_S_up_sampled = bpg.generate_upsampled_baseload(self.load_S, configs['month'], "baseload_profiles_S", configs['timezone'])
+        self.load_P_up_sampled = bpg.generate_upsampled_baseload(self.load_P, configs['month'], "baseload_profiles_P", configs['timezone'])
+        self.load_Q_up_sampled = bpg.generate_upsampled_baseload(self.load_Q, configs['month'], "baseload_profiles_Q", configs['timezone'])
+
         with open(os.getcwd() + "/data/mappings/mappings.pkl", "rb") as pickle_file:
             self.mappings = pickle.load(pickle_file)
 
+    def _gen_apparent_power_profiles(self, df_baseload_P, df_baseload_Q):
+        columns_to_drop = ['Month', 'Hour', 'Day_of_the_Week', 'Is_Holiday', 'total_power', 'Timestamp']     
+        df_baseload_S = df_baseload_P.copy()
+        for col in df_baseload_P.columns:
+            if col not in columns_to_drop:
+                df_baseload_S[col] = np.sqrt(np.square(df_baseload_P[col]) + np.square(df_baseload_Q[col]))
+        
+        return df_baseload_S
+
     def _gen_load_profiles(self):
         try:
-            df_baseload = pd.read_csv(self.configs['ami_data_file'])
-            #if ('FCFS' in self.configs['controller']) or ('FCFS + SM50' in self.configs['controller']) or ('Equal Shares' in self.configs['controller']):
-            # if self.is_any_xf_ol_mi_cont_selected:
-            #     bpg.generate_upsampled_baseload(self.df_baseload_P, self.configs['month'], "baseload_profiles_P")
-            #     bpg.generate_upsampled_baseload(self.df_baseload_Q, self.configs['month'], "baseload_profiles_Q")
-            bpg.generate_upsampled_baseload(df_baseload, self.configs['month'], "baseload_profiles", self.configs['timezone'])
+            # df_baseload = pd.read_csv(self.configs['ami_data_file'])
+            # #if ('FCFS' in self.configs['controller']) or ('FCFS + SM50' in self.configs['controller']) or ('Equal Shares' in self.configs['controller']):
+            # # if self.is_any_xf_ol_mi_cont_selected:
+            # #     bpg.generate_upsampled_baseload(self.df_baseload_P, self.configs['month'], "baseload_profiles_P")
+            # #     bpg.generate_upsampled_baseload(self.df_baseload_Q, self.configs['month'], "baseload_profiles_Q")
+            # bpg.generate_upsampled_baseload(df_baseload, self.configs['month'], "baseload_profiles", self.configs['timezone'])
+            bpg.generate_upsampled_baseload(self.df_baseload_S, self.configs['month'], "baseload_profiles_S", self.configs['timezone'])
+            bpg.generate_upsampled_baseload(self.df_baseload_P, self.configs['month'], "baseload_profiles_P", self.configs['timezone'])
+            bpg.generate_upsampled_baseload(self.df_baseload_Q, self.configs['month'], "baseload_profiles_Q", self.configs['timezone'])
         except FileNotFoundError:
             print("File not found. Please check the file path and try again.")
         except pd.errors.EmptyDataError:
@@ -90,8 +120,8 @@ class SimLite(Simulation):
         except pd.errors.ParserError:
             print("The file contains parsing errors. Please check the file format.")
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")          
-        
+            print(f"An unexpected error occurred: {e}")       
+       
     async def run(self, progress, progress_queue):
 
         if self.is_any_price_based_cont_selected:
@@ -250,19 +280,23 @@ class SimLite(Simulation):
                 print(f"Simulating for scenario ({cont_count}/{len(Scenarios)}): {x}")
                 if x == 'Uncontrolled':
                     progress[0] = 40
-                    EV_profiles_weekly_Uncontrolled = await evpg.Weekly_EV_Charging_Profiles_Generation(df_feeder_month, x, progress, progress_queue)
+                    total_apparent_power_df = await evpg.Weekly_EV_Charging_Profiles_Generation(df_feeder_month, x, self.configs['feeder'], self.mappings, self.load_P_up_sampled, self.load_Q_up_sampled, progress, progress_queue)
                     
                 if x == 'TOU ASAP':
                     progress[0] = 40
-                    EV_profiles_weekly_TOU_ASAP = await evpg.Weekly_EV_Charging_Profiles_Generation(df_feeder_month, x, progress, progress_queue)
+                    total_apparent_power_df = await evpg.Weekly_EV_Charging_Profiles_Generation(df_feeder_month, x, self.configs['feeder'], self.mappings, self.load_P_up_sampled, self.load_Q_up_sampled, progress, progress_queue)
                     
                 if x == 'TOU ALAP':
                     progress[0] = 40
-                    EV_profiles_weekly_TOU_ALAP = await evpg.Weekly_EV_Charging_Profiles_Generation(df_feeder_month, x, progress, progress_queue)
+                    total_apparent_power_df = await evpg.Weekly_EV_Charging_Profiles_Generation(df_feeder_month, x, self.configs['feeder'], self.mappings, self.load_P_up_sampled, self.load_Q_up_sampled, progress, progress_queue)
                     
                 if x == 'TOU Random':
                     progress[0] = 40
-                    EV_profiles_weekly_TOU_random = await evpg.Weekly_EV_Charging_Profiles_Generation(df_feeder_month, x, progress, progress_queue)
+                    total_apparent_power_df = await evpg.Weekly_EV_Charging_Profiles_Generation(df_feeder_month, x, self.configs['feeder'], self.mappings, self.load_P_up_sampled, self.load_Q_up_sampled, progress, progress_queue)
+
+                total_apparent_power_df['time'] = self.load_P_up_sampled.reset_index()['time']
+                total_apparent_power_df.to_csv(os.path.join(parent_directory, "data/temp/aggregated_profiles_"+ x +".csv"))        
+                #total_apparent_power_df.to_csv(parent_directory + "/data/temp/aggregated_profiles_"+ x +".csv")        
                     
         if self.is_any_xf_ol_mi_cont_selected:
             progress[0] = 0
@@ -287,7 +321,7 @@ class SimLite(Simulation):
                     SCMs[index] = 'first_come_first_served'
                 elif scm == 'FCFS + SM':
                     SCMs[index] = 'fcfs_with_minimum'
-                elif scm == 'Equal Shares':
+                elif scm == 'Equal Sharing':
                     SCMs[index] = 'equal_sharing'
 
             print(f"Controllers: {SCMs}\n")
@@ -321,26 +355,27 @@ class SimLite(Simulation):
 
             print('Step 2: EV mapping info are extracted.\n')
 
-            
-            self.df_baseload_P['time'] = pd.to_datetime(self.df_baseload_P['time']).dt.tz_localize('UTC').dt.tz_convert(self.configs['timezone'])
-            self.df_baseload_Q['time'] = pd.to_datetime(self.df_baseload_Q['time']).dt.tz_localize('UTC').dt.tz_convert(self.configs['timezone'])
+            # self.df_baseload_P['time'] = pd.to_datetime(self.df_baseload_P['time']).dt.tz_localize('UTC').dt.tz_convert(self.configs['timezone'])
+            # self.df_baseload_Q['time'] = pd.to_datetime(self.df_baseload_Q['time']).dt.tz_localize('UTC').dt.tz_convert(self.configs['timezone'])
 
-            self.df_baseload_P = self.df_baseload_P.set_index('time')
-            self.df_baseload_Q = self.df_baseload_Q.set_index('time')
+            # self.df_baseload_P = self.df_baseload_P.set_index('time')
+            # self.df_baseload_Q = self.df_baseload_Q.set_index('time')
 
-            # drop non-numeric columns
+            # # drop non-numeric columns
 
-            columns_to_drop = ['Month', 'Hour', 'Day_of_the_Week', 'Is_Holiday', 'total_power', 'Timestamp']
-            for col in columns_to_drop:
-                if col in self.df_baseload_P.columns:
-                    self.df_baseload_P = self.df_baseload_P.drop(columns=col)
-                if col in self.df_baseload_Q.columns:
-                    self.df_baseload_Q = self.df_baseload_Q.drop(columns=col)
+            # columns_to_drop = ['Month', 'Hour', 'Day_of_the_Week', 'Is_Holiday', 'total_power', 'Timestamp']
+            # for col in columns_to_drop:
+            #     if col in self.df_baseload_P.columns:
+            #         self.df_baseload_P = self.df_baseload_P.drop(columns=col)
+            #     if col in self.df_baseload_Q.columns:
+            #         self.df_baseload_Q = self.df_baseload_Q.drop(columns=col)
                 
-            tf_loading_KW_numeric = self.df_baseload_P #tf_loading_KW.copy().drop(columns=columns_to_drop)
-            tf_loading_KVAR_numeric = self.df_baseload_Q #tf_loading_KVAR.copy().drop(columns=columns_to_drop)
+            # tf_loading_KW_numeric = self.df_baseload_P #tf_loading_KW.copy().drop(columns=columns_to_drop)
+            # tf_loading_KVAR_numeric = self.df_baseload_Q #tf_loading_KVAR.copy().drop(columns=columns_to_drop)
 
-            tf_loading_KVA = np.sqrt(np.square(tf_loading_KW_numeric) + np.square(tf_loading_KVAR_numeric))
+            # tf_loading_KVA = np.sqrt(np.square(tf_loading_KW_numeric) + np.square(tf_loading_KVAR_numeric))
+            # tf_loading_KVA = self.df_baseload_S
+            tf_loading_KVA = self.load_S
 
             ## Calculate the avaible capacity (KW) for EV charging
             # Step 1: Create a dictionary mapping transformer SIDs to their Bank Sizes
@@ -422,7 +457,6 @@ class SimLite(Simulation):
                     'charging_events_evaluation': weekly_aggregated_results[scm]['charging_events_evaluation']
                 }
 
-
             # Extract and save the power profiles for each SCM
             ev_profiles = {}
             for scm in SCMs:
@@ -433,6 +467,26 @@ class SimLite(Simulation):
                 ev_profiles[scm] = updated_df.iloc[:-1:1]
                 ev_profiles[scm].to_csv(parent_directory + "/data/temp/" + f'ev_profiles_{self.xf_mit_control_mapping[scm]}.csv', index=True)
 
+
+            total_apparent_power_df = {key: pd.DataFrame(columns=['time'] + list(self.mappings['xf_mappings'][self.configs['feeder']].keys())) for key in SCMs}
+            row_size = len(self.load_Q_up_sampled)
+            for xf in self.mappings['xf_mappings'][self.configs['feeder']]:
+                if str(xf) in self.load_Q_up_sampled:
+                    total_ev_load = {key: np.zeros(row_size) for key in SCMs}
+                    total_active_load = {key: None for key in SCMs}
+                    for scm in SCMs:
+                        for ev in self.mappings['xf_mappings'][self.configs['feeder']][xf]['vehicles']:
+                            if ev in ev_profiles[scm]:
+                                total_ev_load[scm][:-1] += ev_profiles[scm][ev].fillna(0).values
+                        total_active_load[scm] = self.load_P_up_sampled[str(xf)] + total_ev_load[scm]
+                        total_apparent_power_df[scm][xf] = np.sqrt(np.square(total_active_load[scm]) + np.square(self.load_Q_up_sampled[str(xf)]))
+                else:
+                    continue
+
+            for scm in SCMs:
+                #total_apparent_power_df[scm]['time'] = self.load_P_up_sampled.reset_index()['time']
+                total_apparent_power_df[scm].to_csv(parent_directory + "/data/temp/aggregated_profiles_"+ self.xf_mit_control_mapping[scm] +".csv") 
+
             progress[0] = 95
             await progress_queue.put(progress[0]) 
             await asyncio.sleep(0.01)
@@ -440,11 +494,11 @@ class SimLite(Simulation):
             print('Step 5: EV power profiles are extracted and saved as csv files.\n')
 
         # THERE IS A PROBLEM WITH AWAIT
-        if os.path.isfile(self.configs['ami_data_file']):
-            try:
-                self._gen_load_profiles()
-            except:
-                print("Invalid AMI data. Baseload profiles could not be generated.")
+        # if os.path.isfile(self.configs['ami_data_file']):
+        #     try:
+        #         self._gen_load_profiles()
+        #     except:
+        #         print("Invalid AMI data. Baseload profiles could not be generated.")
 
         print("Generating mapping file...")
         convert_xfmappings_to_csv(self.mappings, self.configs['feeder'],  parent_directory + r"/data/temp/mapping.csv")
@@ -455,27 +509,7 @@ class SimLite(Simulation):
         print(f"Simulation completed!\n")
 
 
-# Example simulation class for Lite version
-class SimPlus(Simulation):
 
-    def __init__(self, input_files, configs) -> None:
-        super().__init__(input_files, configs)
-
-    def _gen_load_profiles(self):
-        pass
-        
-    def run(self):
-        self._gen_load_profiles()
-        """
-        
-        Execution
-        
-        """
-        self._save()
-
-    def _save(self):
-        pass
-        
     
 
 
