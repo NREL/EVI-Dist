@@ -1,4 +1,4 @@
-# EVI-DiST v1.0.1
+# EVI-DiST v1.0.2
 
 ![overview](dashboard/fig/dashboard.png)
 
@@ -22,7 +22,7 @@ EVI-DiST has the following analysis functionalities:
 - Comparison of different SCM implementations 
 
 # Getting Started
-You can access all installation and usage details of EVI-DiST on the documentation page: https://pages.github.nrel.gov/AVCI/EVI-Dist/
+You can access all installation and usage details of EVI-DiST on the documentation page: https://github.com/NREL/EVI-Dist/
 
 # Installation 
 

@@ -43,7 +43,7 @@ class pgDisplay(param.Parameterized):
     configs: param.Dict = param.Dict()
 
     save_button: pn.widgets.Button = pn.widgets.Button(
-        name='Save File')  # Change param.Action to pn.widgets.Button
+        name='Save Sim Lite Data', button_type='primary')  # Change param.Action to pn.widgets.Button
 
     ready = param.Boolean(default=False)
 
@@ -60,6 +60,11 @@ class pgDisplay(param.Parameterized):
         # Add baseload_profiles_P,Q,S and make sure they are also saved with correct names. 
         self.paths['ev_profiles'] = dict()
         self.paths['agg_profiles'] = dict()
+
+        # self.root = Tk()
+        # self.root.withdraw()
+        self.saving_in_progress = False
+
         for cntl in self.configs['controller']:
             self.paths['ev_profiles'][cntl] = parent_directory + \
                 "/data/temp/ev_profiles_" + cntl + ".csv"
@@ -161,12 +166,14 @@ class pgDisplay(param.Parameterized):
                                'Transformer ID', 'Bank Size (kVA)', 'Num of Prems', 'Num of EVs', 'Max Overload (%)']])
         self.premise_table = self.obj_table.table
 
-        self.save_button = pn.widgets.FileDownload(
-            callback=self.get_zip_data,
-            filename="downloaded_data.zip",
-            button_type="primary",
-            label="Save Sim Lite Data"
-        )
+        # self.save_button = pn.widgets.FileDownload(
+        #     callback=self.get_zip_data,
+        #     filename="downloaded_data.zip",
+        #     button_type="primary",
+        #     label="Save Sim Lite Data"
+        # )
+
+        self.save_button.on_click(self.save_file_to_directory)
 
         self.pane_stats = pn.Column(height=500)
 
@@ -208,10 +215,47 @@ class pgDisplay(param.Parameterized):
                     v[k2] = str(v2)
 
         return save_session_dict
+    
+    def save_file_to_directory(self, event):
+        if self.saving_in_progress:
+            return  # Prevent multiple triggers
+        self.saving_in_progress = True  # Set flag
+        # root = Tk()
+        # root.withdraw()  # Hide the root window
+        # root.lift()  # Bring the dialog to the front
+        # root.attributes("-topmost", True)  # Ensure it stays on top
+
+        # zip_file_path = filedialog.asksaveasfilename(
+        #     defaultextension=".zip", 
+        #     filetypes=[("ZIP files", "*.zip")]
+        # )
+        # # Destroy the Tkinter root window to prevent lingering issues
+        # root.destroy()
+        #formatted_datetime = datetime.now().strftime("%d-%m-%Y_%H:%M")
+        zip_file_path = parent_directory + "/data/temp/saved_files.zip"
+        #+ self.configs['feeder'] + "_" + formatted_datetime + ".zip"
+
+        if zip_file_path:
+            zip_buffer = self.get_zip_data()
+            zip_buffer.seek(0)  # Reset the buffer position
+            with open(zip_file_path, "wb") as zip_file:
+                zip_file.write(zip_buffer.read())
+
+            pn.state.notifications.success(
+                f"Data has been saved to /EVI-Dist/data/temp folder.", duration=4000
+            )
+        
+        else:
+            pn.state.notifications.error(
+                "No file path selected. Please try again.", duration=4000
+            )
+
+        self.saving_in_progress = False  # Reset flag
+
 
     def save_file(self, event):
         file_name_input = pn.widgets.TextInput(
-            name='ZIP File Name', value='saved_data.zip')
+            name='ZIP File Name', value='saved_data_files.zip')
 
         def download_zip(event):
             # Get file name from input
@@ -231,7 +275,7 @@ class pgDisplay(param.Parameterized):
 
     def get_zip_data(self):
         pn.state.notifications.info(
-            'Data files are being saved and will be downloaded shortly.',
+            'Data files are being zipped and will be saved in EVI-Dist/data/temp shortly.',
             duration=4000)
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w") as zip_file:
