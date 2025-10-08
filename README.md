@@ -1,6 +1,6 @@
 # EVI-DiST v1.0.2
 
-![overview](dashboard/fig/dashboard.png)
+![overview](docs/img/dashboard.png)
 
 Electric Vehicle Integration - Distribution System Integration Tool (EVI-DiST) is a co-simulation software platform for modeling, analyzing, and controling grid-scale EV charging integration from primary distribution feeders to secondary network levels.
 
