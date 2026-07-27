@@ -22,7 +22,7 @@ EVI-DiST has the following analysis functionalities:
 - Comparison of different SCM implementations 
 
 # Getting Started
-You can access all installation and usage details of EVI-DiST on the documentation page: [https://github.com/NREL/EVI-Dist/](https://nrel.github.io/EVI-Dist/)
+You can access all installation and usage details of EVI-DiST on the documentation page: [https://github.com/NatLabRockies/EVI-Dist/](https://natlabrockies.github.io/EVI-Dist/)
 
 # Installation 
 
@@ -57,4 +57,4 @@ You can also access the documentation locally (after installation) by clicking t
 ![Alt text](./docs/img/docs.png "EVI-DiST Documentation Page")
 
 # Contacts
-For questions or more information, please contact: EVI-DiST@nrel.gov
+For questions or more information, please contact: EVI-DiST@nlr.gov
